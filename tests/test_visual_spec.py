@@ -17,7 +17,8 @@ def _prepare_state(text: str, task_type: str = "auto") -> WorkflowState:
     return state
 
 
-def test_ecommerce_visual_spec_domain_fields():
+def test_ecommerce_visual_spec_domain_fields(openai_http_env):
+    # Verifies LLM-enriched (DeepSeek, mocked httpx) ecommerce spec content.
     state = _prepare_state("电商促销商品主图 banner 设计，突出卖点")
     vs = VisualSpecAgent().build(state).visual_spec
     assert vs is not None

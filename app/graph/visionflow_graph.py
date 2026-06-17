@@ -50,6 +50,14 @@ class VisionFlowGraph:
         duration_ms = int((time.perf_counter() - start) * 1000)
         if state.traces:
             state.traces[-1] = state.traces[-1].model_copy(update={"duration_ms": duration_ms})
+        # LangGraph LastValue channels only propagate fields whose reference
+        # changes. Agents append to the existing ``traces`` list in place, so we
+        # rebind mutable containers to fresh references to force propagation
+        # between nodes (otherwise the final state would lose all traces).
+        state.traces = list(state.traces)
+        state.clarification_resolved = dict(state.clarification_resolved)
+        state.requirement = dict(state.requirement)
+        state.domain_enrichment = dict(state.domain_enrichment)
         return state
 
     def _route_task(self, state: WorkflowState) -> WorkflowState:

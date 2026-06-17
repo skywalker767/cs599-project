@@ -62,7 +62,16 @@ class MockLLM(BaseLLM):
         }
         best = max(scores, key=scores.get)
         if scores[best] == 0:
-            best = "ppt_visual"
+            # No domain signal: stay honest with a low-confidence best guess so
+            # the router can request clarification instead of asserting a type.
+            return json.dumps(
+                {
+                    "task_type": "ppt_visual",
+                    "confidence": 0.2,
+                    "reasoning": "mock llm: no domain signal detected",
+                },
+                ensure_ascii=False,
+            )
         return json.dumps(
             {"task_type": best, "confidence": 0.75, "reasoning": "mock llm routing"},
             ensure_ascii=False,

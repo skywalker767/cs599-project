@@ -33,11 +33,21 @@ def validate_task_type(task_type: str) -> str:
 
 
 class RouteResult(BaseModel):
-    """Structured routing decision with confidence and evidence."""
+    """Structured routing decision with confidence, evidence and clarification flags.
+
+    ``task_type`` always carries the best current guess so downstream agents keep
+    working, but when ``clarification_required`` is True the guess is low-confidence
+    and the caller should prefer asking ``clarification_question`` instead of
+    silently generating an asset.
+    """
 
     task_type: TaskTypeStr
     confidence: float = Field(..., ge=0.0, le=1.0)
+    reasoning: str = ""
+    matched_signals: list[str] = Field(default_factory=list)
     evidence: list[str] = Field(default_factory=list)
+    clarification_required: bool = False
+    clarification_question: str | None = None
     llm_used: bool = False
     fallback_reason: str | None = None
     method: str = "deterministic"
@@ -274,6 +284,18 @@ class EvaluationReport(BaseModel):
     score_breakdown: dict[str, dict[str, Any]] = Field(
         default_factory=dict,
         description="Per-dimension score + textual rationale",
+    )
+    rubric: dict[str, dict[str, Any]] = Field(
+        default_factory=dict,
+        description=(
+            "Heuristic rubric breakdown. Keys: visual_validity, spec_completeness, "
+            "requirement_alignment, domain_fit, traceability, reproducibility. "
+            "Each value carries score, rationale, evidence and deductions."
+        ),
+    )
+    evidence: list[str] = Field(
+        default_factory=list,
+        description="Flat list of evidence strings gathered across rubric dimensions",
     )
     comments: list[str] = Field(default_factory=list)
     suggestions: list[str] = Field(default_factory=list)

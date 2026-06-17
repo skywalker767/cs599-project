@@ -45,6 +45,9 @@ benchmark:
 demo:
 	$(DEMO_ENV) $(PY) scripts/run_demo.py
 
+readme-examples:
+	$(DEMO_ENV) $(PY) scripts/generate_readme_examples.py
+
 lint:
 	$(PY) -m ruff check app tests
 

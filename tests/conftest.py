@@ -175,8 +175,41 @@ class _FakeHttpxClient:
 
 
 @pytest.fixture(autouse=True)
-def api_test_env(monkeypatch):
-    """Force API-only mode with mocked HTTP for all tests."""
+def mock_provider_env(monkeypatch):
+    """Default test environment: deterministic mock providers, NO API keys.
+
+    This mirrors the shipped ``.env.example`` defaults so the suite proves the
+    clone-and-run experience works offline. ``httpx.Client`` is still swapped for
+    a fake as a safety net so an accidental real network call fails loudly
+    instead of reaching the internet.
+    """
+    monkeypatch.setenv("LLM_PROVIDER", "mock")
+    monkeypatch.setenv("IMAGE_PROVIDER", "mock")
+    monkeypatch.setenv("DEMO_MODE", "false")
+    # Empty strings override any key present in a developer's local .env file,
+    # keeping the default suite genuinely keyless and offline.
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "")
+    monkeypatch.setenv("IMAGE_API_KEY", "")
+    monkeypatch.setenv("VISION_EVALUATOR_PROVIDER", "none")
+    get_settings.cache_clear()
+    vg_module._graph_instance = None
+    svc_module._service = None
+    monkeypatch.setattr("httpx.Client", _FakeHttpxClient)
+    yield
+    get_settings.cache_clear()
+    vg_module._graph_instance = None
+    svc_module._service = None
+
+
+@pytest.fixture
+def openai_http_env(monkeypatch):
+    """Opt-in environment that exercises the OpenAI-compatible API code path.
+
+    Uses mocked ``httpx`` (no real network). Request this fixture explicitly in
+    tests that need to verify the provider=openai branch; the default suite runs
+    fully on mock providers.
+    """
     monkeypatch.setenv("LLM_PROVIDER", "deepseek")
     monkeypatch.setenv("DEMO_MODE", "false")
     monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-test-key")
@@ -185,7 +218,6 @@ def api_test_env(monkeypatch):
     monkeypatch.setenv("OPENAI_BASE_URL", "https://api.test/v1")
     monkeypatch.setenv("IMAGE_PROVIDER", "openai")
     monkeypatch.setenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
-    monkeypatch.setenv("VISION_EVALUATOR_PROVIDER", "none")
     get_settings.cache_clear()
     vg_module._graph_instance = None
     svc_module._service = None

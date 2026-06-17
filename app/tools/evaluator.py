@@ -1,4 +1,12 @@
-"""Layered quality evaluator: deterministic + heuristic + optional VLM."""
+"""Layered quality evaluator: deterministic + heuristic + rubric + optional VLM.
+
+This is a *heuristic* evaluator. It checks file validity, image statistics
+(entropy/contrast/edges), spec completeness, domain rubric coverage, trace
+stage coverage and reproducibility signals. It is NOT a learned model of human
+visual aesthetics; the offline scores are explainable proxies, and real
+aesthetic judgement requires the optional VLM layer (needs an API key) or a
+human reviewer.
+"""
 
 from __future__ import annotations
 
@@ -56,6 +64,67 @@ class ImageStats:
 class LayerScore:
     score: int
     rationale: str
+
+
+@dataclass
+class RubricDimension:
+    """One rubric dimension with explainable evidence and deductions."""
+
+    score: int
+    rationale: str
+    evidence: list[str] = field(default_factory=list)
+    deductions: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            "score": max(0, min(100, int(self.score))),
+            "rationale": self.rationale,
+            "evidence": self.evidence,
+            "deductions": self.deductions,
+        }
+
+
+# Minimum/maximum plausible asset size in bytes (deterministic PNGs are tiny but
+# valid; corrupt/empty files are smaller, runaway files are larger).
+_MIN_ASSET_BYTES = 64
+_MAX_ASSET_BYTES = 25 * 1024 * 1024
+
+# Pipeline stages we expect a fully-traced run to cover.
+_EXPECTED_PIPELINE_STAGES = (
+    "router_decision",
+    "clarification_needed",
+    "visual_spec_created",
+    "prompt_created",
+    "output_generated",
+    "evaluation_completed",
+)
+
+# Per-task-type rubric checklists (label -> predicate evaluated against spec/prompt).
+_DOMAIN_RUBRIC: dict[str, list[str]] = {
+    "ecommerce_banner": [
+        "product",
+        "brand_or_category",
+        "background",
+        "cta_or_marketing_text",
+        "composition",
+        "target_platform",
+    ],
+    "academic_figure": [
+        "chart_or_diagram_type",
+        "labels",
+        "caption",
+        "data_or_source_hint",
+        "readability",
+        "academic_style",
+    ],
+    "ppt_visual": [
+        "slide_title",
+        "layout",
+        "hierarchy",
+        "supporting_elements",
+        "presentation_readability",
+    ],
+}
 
 
 class DeterministicEvaluator:
@@ -462,12 +531,265 @@ class VLMEvaluator:
             return {}, None
 
 
+class RubricEvaluator:
+    """Explainable, deterministic rubric on top of the layered scores.
+
+    This is a *heuristic* rubric, not a learned visual-aesthetics model. Every
+    dimension exposes ``score``, ``rationale``, ``evidence`` and ``deductions`` so
+    the scoring is auditable and reproducible.
+    """
+
+    def build(
+        self,
+        visual_spec: VisualSpec,
+        prompt: str,
+        output_path: Path | None,
+        layers: dict[str, LayerScore],
+        traces: list[AgentTrace] | None,
+    ) -> dict[str, RubricDimension]:
+        return {
+            "visual_validity": self._visual_validity(visual_spec, output_path, layers),
+            "spec_completeness": self._spec_completeness(visual_spec, layers),
+            "requirement_alignment": self._requirement_alignment(visual_spec, prompt, layers),
+            "domain_fit": self._domain_fit(visual_spec, prompt),
+            "traceability": self._traceability(traces),
+            "reproducibility": self._reproducibility(traces),
+        }
+
+    def _visual_validity(
+        self,
+        spec: VisualSpec,
+        output_path: Path | None,
+        layers: dict[str, LayerScore],
+    ) -> RubricDimension:
+        evidence: list[str] = []
+        deductions: list[str] = []
+        if not output_path or not output_path.exists():
+            return RubricDimension(
+                10,
+                "未找到输出文件，无法确认视觉资产有效性。",
+                evidence=["output_path missing"],
+                deductions=["输出文件不存在"],
+            )
+
+        base = layers.get("format_validity", LayerScore(50, "")).score
+        suffix = output_path.suffix.lower().lstrip(".")
+        expected = (spec.output_format or "").lower().strip()
+        evidence.append(f"file={output_path.name}")
+        evidence.append(f"suffix={suffix}")
+        if expected:
+            if expected == suffix or (expected in {"png", "svg"} and expected == suffix):
+                evidence.append(f"扩展名与 output_format={expected} 一致")
+            else:
+                base -= 15
+                deductions.append(f"扩展名 {suffix} 与请求 output_format={expected} 不一致")
+
+        size = output_path.stat().st_size
+        evidence.append(f"size={size}B")
+        if size < _MIN_ASSET_BYTES:
+            base -= 30
+            deductions.append(f"文件过小（{size}B < {_MIN_ASSET_BYTES}B），疑似损坏")
+        elif size > _MAX_ASSET_BYTES:
+            base -= 10
+            deductions.append(f"文件过大（{size}B > {_MAX_ASSET_BYTES}B）")
+        else:
+            evidence.append("文件大小在合理范围内")
+
+        return RubricDimension(
+            max(0, min(100, base)),
+            layers.get("format_validity", LayerScore(0, "")).rationale or "格式校验完成。",
+            evidence=evidence,
+            deductions=deductions,
+        )
+
+    def _spec_completeness(
+        self,
+        spec: VisualSpec,
+        layers: dict[str, LayerScore],
+    ) -> RubricDimension:
+        # canvas / layout / objects / style / constraints
+        checks = {
+            "canvas(aspect_ratio)": bool(spec.aspect_ratio and str(spec.aspect_ratio).strip()),
+            "layout(scenario/style)": bool(
+                (spec.scenario and spec.scenario.strip()) or (spec.style and spec.style.strip())
+            ),
+            "objects(key_elements/main_subject)": bool(spec.key_elements or spec.main_subject),
+            "style": bool(spec.style and spec.style.strip()),
+            "constraints": bool(spec.constraints),
+            "title": bool(spec.title and spec.title.strip()),
+            "purpose": bool(spec.purpose and spec.purpose.strip()),
+        }
+        present = [k for k, v in checks.items() if v]
+        missing = [k for k, v in checks.items() if not v]
+        score = int(len(present) / len(checks) * 100)
+        return RubricDimension(
+            score,
+            f"Visual Spec 关键字段覆盖 {len(present)}/{len(checks)}。",
+            evidence=[f"present:{k}" for k in present],
+            deductions=[f"missing:{k}" for k in missing],
+        )
+
+    def _requirement_alignment(
+        self,
+        spec: VisualSpec,
+        prompt: str,
+        layers: dict[str, LayerScore],
+    ) -> RubricDimension:
+        layer = layers.get("semantic_alignment", LayerScore(45, ""))
+        pl = prompt.lower()
+        evidence: list[str] = []
+        deductions: list[str] = []
+        if spec.main_subject and spec.main_subject.lower() in pl:
+            evidence.append("prompt 含 main_subject")
+        else:
+            deductions.append("prompt 未体现 main_subject")
+        matched = [el for el in spec.key_elements[:6] if el and el.lower() in pl]
+        if matched:
+            evidence.append(f"key_elements 命中: {', '.join(matched)}")
+        missing_elems = [el for el in spec.key_elements[:6] if el and el.lower() not in pl]
+        if missing_elems:
+            deductions.append(f"prompt 缺少 key_elements: {', '.join(missing_elems)}")
+        return RubricDimension(
+            layer.score,
+            "需求对齐基于 prompt 与 Visual Spec 主体/要素的字面覆盖（启发式）。",
+            evidence=evidence,
+            deductions=deductions,
+        )
+
+    def _domain_fit(self, spec: VisualSpec, prompt: str) -> RubricDimension:
+        checklist = _DOMAIN_RUBRIC.get(spec.task_type, [])
+        if not checklist:
+            return RubricDimension(50, "未知任务类型，使用通用评估。", evidence=[], deductions=[])
+
+        haystack = " ".join(
+            [
+                prompt,
+                spec.title,
+                spec.main_subject,
+                spec.style,
+                spec.scenario,
+                " ".join(spec.key_elements),
+                " ".join(spec.text_requirements),
+            ]
+        ).lower()
+
+        present: list[str] = []
+        missing: list[str] = []
+        for item in checklist:
+            if self._domain_item_present(item, spec, haystack):
+                present.append(item)
+            else:
+                missing.append(item)
+
+        score = int(len(present) / len(checklist) * 100)
+        return RubricDimension(
+            score,
+            f"{spec.task_type} 领域 rubric 覆盖 {len(present)}/{len(checklist)}。",
+            evidence=[f"covered:{k}" for k in present],
+            deductions=[f"weak_or_missing:{k}" for k in missing],
+        )
+
+    @staticmethod
+    def _domain_item_present(item: str, spec: VisualSpec, haystack: str) -> bool:
+        keyword_map = {
+            "product": ["product", "商品", "产品"],
+            "brand_or_category": ["brand", "品牌", "category", "品类", "系列"],
+            "background": ["background", "背景", "场景", "scene"],
+            "cta_or_marketing_text": ["cta", "购买", "立即", "抢购", "促销", "buy", "shop"],
+            "composition": ["composition", "构图", "布局", "layout", "排版"],
+            "target_platform": ["platform", "平台", "小红书", "淘宝", "京东", "抖音"],
+            "chart_or_diagram_type": ["chart", "diagram", "flow", "流程", "架构", "pipeline", "图"],
+            "labels": ["label", "标签", "标注", "注释", "模块"],
+            "caption": ["caption", "图注", "说明"],
+            "data_or_source_hint": ["data", "数据", "source", "实验", "结果", "指标"],
+            "readability": ["readable", "可读", "清晰", "legible", "对比"],
+            "academic_style": ["academic", "学术", "论文", "期刊", "journal"],
+            "slide_title": ["title", "标题", "封面", "主题"],
+            "layout": ["layout", "布局", "排版", "留白"],
+            "hierarchy": ["hierarchy", "层级", "层次", "要点", "结构"],
+            "supporting_elements": ["icon", "图标", "图形", "辅助", "supporting", "配图"],
+            "presentation_readability": ["presentation", "演示", "汇报", "可读", "清晰"],
+        }
+        # Domain-specific structured fields strengthen the check.
+        if item == "cta_or_marketing_text" and spec.product_poster and spec.product_poster.cta:
+            return True
+        if item == "caption" and spec.academic and spec.academic.caption:
+            return True
+        if item == "labels" and spec.academic and spec.academic.labels:
+            return True
+        if item == "hierarchy" and spec.educational and spec.educational.hierarchy:
+            return True
+        if item == "slide_title" and spec.title:
+            return True
+        keywords = keyword_map.get(item, [item])
+        return any(k.lower() in haystack for k in keywords)
+
+    def _traceability(self, traces: list[AgentTrace] | None) -> RubricDimension:
+        if not traces:
+            return RubricDimension(
+                10,
+                "缺少 trace，无法验证流水线步骤。",
+                evidence=[],
+                deductions=["无 trace 记录"],
+            )
+        steps = {t.metadata.get("pipeline_step") for t in traces}
+        covered = [s for s in _EXPECTED_PIPELINE_STAGES if s in steps]
+        missing = [s for s in _EXPECTED_PIPELINE_STAGES if s not in steps]
+        score = int(len(covered) / len(_EXPECTED_PIPELINE_STAGES) * 100)
+        return RubricDimension(
+            score,
+            f"流水线阶段覆盖 {len(covered)}/{len(_EXPECTED_PIPELINE_STAGES)}"
+            "（input→route→clarification→spec→prompt→generation→evaluation）。",
+            evidence=[f"stage:{s}" for s in covered],
+            deductions=[f"missing_stage:{s}" for s in missing],
+        )
+
+    def _reproducibility(self, traces: list[AgentTrace] | None) -> RubricDimension:
+        settings = get_settings()
+        evidence: list[str] = []
+        deductions: list[str] = []
+        score = 40
+
+        provider_recorded = False
+        determinism_recorded = False
+        if traces:
+            for t in traces:
+                meta = t.metadata or {}
+                if meta.get("provider"):
+                    provider_recorded = True
+                    evidence.append(f"provider={meta.get('provider')}")
+                if meta.get("generation_mode") in {"mock", "svg"}:
+                    determinism_recorded = True
+                    evidence.append(f"generation_mode={meta.get('generation_mode')}")
+        if provider_recorded:
+            score += 25
+        else:
+            deductions.append("trace 未记录 provider")
+        if determinism_recorded:
+            score += 20
+            evidence.append("mock/svg provider 输出确定性")
+        else:
+            deductions.append("未检测到确定性(mock/svg)生成模式")
+
+        # Config snapshot
+        evidence.append(f"config:image_provider={settings.image_provider}")
+        evidence.append(f"config:llm_provider={settings.llm_provider}")
+        score += 15
+        return RubricDimension(
+            max(0, min(100, score)),
+            "可复现性依据：provider 记录、确定性生成模式、配置快照。",
+            evidence=list(dict.fromkeys(evidence)),
+            deductions=deductions,
+        )
+
+
 class Evaluator:
     """Facade combining deterministic, heuristic, and optional VLM layers."""
 
     def __init__(self) -> None:
         self.deterministic = DeterministicEvaluator()
         self.heuristic = HeuristicVisualEvaluator()
+        self.rubric = RubricEvaluator()
         self.vlm = VLMEvaluator()
 
     def evaluate(
@@ -515,6 +837,12 @@ class Evaluator:
             suggestions.append("移除绝对化宣传用语，降低合规风险。")
 
         breakdown = {k: {"score": v.score, "rationale": v.rationale} for k, v in layers.items()}
+
+        rubric_dims = self.rubric.build(visual_spec, prompt, output_path, layers, traces)
+        rubric = {k: v.to_dict() for k, v in rubric_dims.items()}
+        rubric_evidence: list[str] = []
+        for dim in rubric_dims.values():
+            rubric_evidence.extend(dim.evidence)
 
         core_keys = [
             "format_validity",
@@ -569,6 +897,8 @@ class Evaluator:
             vlm_score=vlm_overall,
             evaluator_layers=active_layers,
             score_breakdown=breakdown,
+            rubric=rubric,
+            evidence=rubric_evidence,
             comments=comments,
             suggestions=suggestions,
             metric_scores=metric_scores,

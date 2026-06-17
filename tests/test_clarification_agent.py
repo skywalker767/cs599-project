@@ -135,8 +135,13 @@ def test_run_clarify_via_service():
     assert resp.route_reason
 
 
-def test_llm_dynamic_question_included(agent):
-    """DeepSeek (mocked) should add at least one contextual question."""
+def test_llm_dynamic_question_included(openai_http_env):
+    """DeepSeek (mocked) should add at least one contextual question.
+
+    Uses the opt-in OpenAI/DeepSeek HTTP path (mocked httpx) since this verifies
+    LLM-driven dynamic questions; the default suite runs on the mock LLM.
+    """
+    agent = ClarificationAgent()
     questions = agent.generate_questions(
         "为夏季低糖冰咖啡生成小红书促销图，突出清爽低糖",
         "ecommerce_banner",

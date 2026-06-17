@@ -17,6 +17,20 @@ def _png_chunk(chunk_type: bytes, data: bytes) -> bytes:
     return struct.pack(">I", len(data)) + chunk_type + data + struct.pack(">I", crc)
 
 
+def _render_png(width: int, height: int, rgb: tuple[int, int, int]) -> bytes:
+    """Build a valid PNG, preferring Pillow for broad decoder compatibility."""
+    try:
+        import io
+
+        from PIL import Image
+
+        buf = io.BytesIO()
+        Image.new("RGB", (width, height), rgb).save(buf, format="PNG")
+        return buf.getvalue()
+    except ImportError:
+        return _solid_png(width, height, rgb)
+
+
 def _solid_png(width: int, height: int, rgb: tuple[int, int, int]) -> bytes:
     """Build a minimal valid PNG without external dependencies."""
     raw_rows = []
@@ -58,7 +72,7 @@ class MockImageGenerator:
         hue = int(digest[:6], 16) % 200
         rgb = (40 + hue % 80, 80 + (hue // 2) % 80, 120 + hue % 60)
 
-        png_bytes = _solid_png(resolution.width, resolution.height, rgb)
+        png_bytes = _render_png(resolution.width, resolution.height, rgb)
         out_path.write_bytes(png_bytes)
 
         meta = {

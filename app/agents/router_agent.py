@@ -36,6 +36,16 @@ ROUTER_LLM_SYSTEM = (
     "academic_figure covers papers, pipelines, and academic diagrams."
 )
 
+# Below this confidence the route is treated as uncertain and clarification is requested.
+CLARIFICATION_THRESHOLD = 0.45
+
+CLARIFICATION_QUESTION = (
+    "无法确定视觉类型，请选择：电商商品主图(ecommerce)、学术论文配图(academic)，"
+    "还是演示/PPT 幻灯片(ppt_visual)？"
+    " | Do you want an e-commerce product visual, an academic figure, "
+    "or a presentation slide?"
+)
+
 
 class TaskRouterAgent:
     """Hybrid task router: deterministic baseline with optional LLM refinement."""
@@ -63,8 +73,12 @@ class TaskRouterAgent:
             result = RouteResult(
                 task_type="ppt_visual",
                 confidence=0.0,
+                reasoning="用户输入为空，无法判断视觉类型，需要澄清。",
+                matched_signals=[],
                 evidence=["empty_input"],
-                fallback_reason="empty user_input; defaulting to ppt_visual",
+                clarification_required=True,
+                clarification_question=CLARIFICATION_QUESTION,
+                fallback_reason="empty user_input; clarification required (best-guess ppt_visual)",
                 method="deterministic",
             )
             return self._apply_route(state, result)
@@ -73,6 +87,8 @@ class TaskRouterAgent:
             result = RouteResult(
                 task_type=req.task_type,  # type: ignore[arg-type]
                 confidence=1.0,
+                reasoning=f"调用方显式指定 task_type={req.task_type}。",
+                matched_signals=[f"manual_override:{req.task_type}"],
                 evidence=[f"manual_override:{req.task_type}"],
                 method="manual",
             )
@@ -82,18 +98,50 @@ class TaskRouterAgent:
         if self.llm_client and self._llm_available():
             llm_result = self._llm_route(text, baseline)
             if llm_result:
-                return self._apply_route(state, llm_result)
+                return self._apply_route(state, self._finalize(llm_result))
 
-        return self._apply_route(state, baseline)
+        return self._apply_route(state, self._finalize(baseline))
+
+    def route_rule_based(self, state: WorkflowState) -> WorkflowState:
+        """Deterministic-only routing entry point (no LLM call)."""
+        req = state.request
+        text = (req.user_input or "").strip()
+        if not text:
+            return self.route(state)
+        if req.task_type and req.task_type != "auto" and req.task_type in VALID_TASK_TYPES:
+            return self.route(state)
+        return self._apply_route(state, self._finalize(self._deterministic_route(text)))
 
     def route_with_llm(self, state: WorkflowState) -> WorkflowState:
-        """Explicit LLM routing entry point with deterministic fallback."""
+        """Backward-compatible alias for :meth:`route`.
+
+        ``route`` already performs real LLM classification when an LLM client is
+        available (falling back to the deterministic baseline otherwise), so this
+        method simply delegates. Prefer :meth:`route` or :meth:`route_rule_based`.
+        """
         return self.route(state)
+
+    @staticmethod
+    def _finalize(result: RouteResult) -> RouteResult:
+        """Flag low-confidence routes as needing clarification."""
+        if result.method == "manual":
+            return result
+        if result.confidence < CLARIFICATION_THRESHOLD and not result.clarification_required:
+            result.clarification_required = True
+            if not result.clarification_question:
+                result.clarification_question = CLARIFICATION_QUESTION
+            if not result.fallback_reason:
+                result.fallback_reason = (
+                    f"confidence {result.confidence} < {CLARIFICATION_THRESHOLD}; "
+                    "clarification recommended"
+                )
+        return result
 
     def _deterministic_route(self, text: str) -> RouteResult:
         lower = text.lower()
         scores: dict[str, float] = {}
         evidence: list[str] = []
+        matched_signals: list[str] = []
 
         for task_type, patterns in _DOMAIN_PATTERNS.items():
             score = 0.0
@@ -102,15 +150,21 @@ class TaskRouterAgent:
                 if matches:
                     score += weight * len(matches)
                     evidence.append(f"{task_type}:{pattern}×{len(matches)}")
+                    matched_signals.extend(dict.fromkeys(m for m in matches if m))
             scores[task_type] = score
 
         total = sum(scores.values())
         if total == 0:
+            # Honest behaviour: do NOT silently classify unknown input as ppt_visual.
             return RouteResult(
                 task_type="ppt_visual",
-                confidence=0.35,
+                confidence=0.2,
+                reasoning="未匹配到任何领域关键词，无法可靠判断，建议向用户澄清。",
+                matched_signals=[],
                 evidence=["no_keyword_match"],
-                fallback_reason="no domain keywords matched; default ppt_visual",
+                clarification_required=True,
+                clarification_question=CLARIFICATION_QUESTION,
+                fallback_reason="no domain keywords matched; clarification required",
                 method="deterministic",
             )
 
@@ -120,17 +174,31 @@ class TaskRouterAgent:
         confidence = min(0.95, 0.5 + (scores[best] / max(total, 1)) * 0.4 + margin * 0.05)
 
         # Ambiguous: top two scores within 15% of each other
+        ambiguous = False
         sorted_types = sorted(scores, key=scores.get, reverse=True)
         if len(sorted_types) > 1 and scores[sorted_types[0]] > 0:
             ratio = scores[sorted_types[1]] / scores[sorted_types[0]]
             if ratio > 0.85:
                 evidence.append(f"ambiguous:{sorted_types[0]}_vs_{sorted_types[1]}")
-                confidence = min(confidence, 0.55)
+                confidence = min(confidence, 0.4)
+                ambiguous = True
+
+        reasoning = (
+            f"领域信号最强为 {best}（score={scores[best]:.1f}，领先 margin={margin:.1f}）。"
+        )
+        if ambiguous:
+            reasoning += (
+                f" 但 {sorted_types[0]} 与 {sorted_types[1]} 信号接近，存在歧义。"
+            )
 
         return RouteResult(
             task_type=best,  # type: ignore[arg-type]
             confidence=round(confidence, 3),
+            reasoning=reasoning,
+            matched_signals=list(dict.fromkeys(matched_signals))[:12],
             evidence=evidence[:12],
+            clarification_required=ambiguous,
+            clarification_question=CLARIFICATION_QUESTION if ambiguous else None,
             method="deterministic",
         )
 
@@ -142,7 +210,11 @@ class TaskRouterAgent:
                 return RouteResult(
                     task_type=baseline.task_type,
                     confidence=baseline.confidence,
+                    reasoning=baseline.reasoning,
+                    matched_signals=baseline.matched_signals,
                     evidence=baseline.evidence + ["llm_parse_failed"],
+                    clarification_required=baseline.clarification_required,
+                    clarification_question=baseline.clarification_question,
                     llm_used=False,
                     fallback_reason="LLM response could not be parsed; using deterministic baseline",
                     method="deterministic_fallback",
@@ -153,7 +225,11 @@ class TaskRouterAgent:
                 return RouteResult(
                     task_type=baseline.task_type,
                     confidence=baseline.confidence,
+                    reasoning=baseline.reasoning,
+                    matched_signals=baseline.matched_signals,
                     evidence=baseline.evidence + [f"llm_invalid_type:{task_type}"],
+                    clarification_required=baseline.clarification_required,
+                    clarification_question=baseline.clarification_question,
                     llm_used=False,
                     fallback_reason=f"LLM returned invalid task_type '{task_type}'",
                     method="deterministic_fallback",
@@ -165,6 +241,8 @@ class TaskRouterAgent:
             return RouteResult(
                 task_type=task_type,  # type: ignore[arg-type]
                 confidence=round(conf, 3),
+                reasoning=(f"LLM 分类：{reasoning}" if reasoning else "LLM 分类（无说明）。"),
+                matched_signals=baseline.matched_signals,
                 evidence=baseline.evidence + [f"llm:{reasoning}"] if reasoning else ["llm_routing"],
                 llm_used=True,
                 method="llm",
@@ -173,7 +251,11 @@ class TaskRouterAgent:
             return RouteResult(
                 task_type=baseline.task_type,
                 confidence=baseline.confidence,
+                reasoning=baseline.reasoning,
+                matched_signals=baseline.matched_signals,
                 evidence=baseline.evidence + ["llm_exception"],
+                clarification_required=baseline.clarification_required,
+                clarification_question=baseline.clarification_question,
                 llm_used=False,
                 fallback_reason=f"LLM unavailable: {type(exc).__name__}",
                 method="deterministic_fallback",
@@ -228,7 +310,11 @@ class TaskRouterAgent:
             f"confidence={result.confidence}",
             f"task_type={result.task_type}",
         ]
-        if result.evidence:
+        if result.clarification_required:
+            parts.append("clarification_required=true")
+        if result.matched_signals:
+            parts.append(f"signals={', '.join(result.matched_signals[:4])}")
+        elif result.evidence:
             parts.append(f"evidence={'; '.join(result.evidence[:4])}")
         if result.fallback_reason:
             parts.append(f"fallback={result.fallback_reason}")
