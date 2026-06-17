@@ -1,0 +1,23 @@
+[
+  {
+    "slug": "ecommerce_coffee",
+    "file": "examples/ecommerce_coffee.png",
+    "task_type": "ecommerce_banner",
+    "score": 83,
+    "title": "冰爽零卡·夏日抢购"
+  },
+  {
+    "slug": "academic_pipeline",
+    "file": "examples/academic_pipeline.svg",
+    "task_type": "academic_figure",
+    "score": 92,
+    "title": "五阶段双分支神经网络方法流程图"
+  },
+  {
+    "slug": "ppt_cover",
+    "file": "examples/ppt_cover.png",
+    "task_type": "ppt_visual",
+    "score": 80,
+    "title": "智链未来：AI驱动开发封面"
+  }
+]
