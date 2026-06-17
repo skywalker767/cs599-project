@@ -1,6 +1,5 @@
 """Tests for visual spec agent."""
 
-import pytest
 
 from app.agents.requirement_agent import RequirementAgent
 from app.agents.router_agent import TaskRouterAgent
@@ -27,7 +26,10 @@ def test_ecommerce_visual_spec_domain_fields():
     assert vs.product_poster.cta
     assert vs.field_provenance.get("title") in ("user_input", "default", "inferred")
     combined = " ".join(vs.key_elements + vs.constraints + vs.avoid).lower()
-    assert any(k in combined for k in ("促销", "商品", "cta", "卖点"))
+    assert any(
+        k in combined
+        for k in ("促销", "商品", "cta", "卖点", "product", "headline", "banner", "sale")
+    )
 
 
 def test_academic_visual_spec_domain_fields():

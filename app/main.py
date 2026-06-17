@@ -106,14 +106,15 @@ def list_tasks(
     db: Session = Depends(get_db),
 ):
     service = get_generation_service()
-    tasks = service.list_tasks(db, limit=limit, offset=offset)
-    total = service.count_tasks(db)
+    page = service.list_tasks(db, limit=limit, offset=offset)
     return TaskListResponse(
-        tasks=tasks,
-        total=total,
-        limit=limit,
-        offset=offset,
-        returned_count=len(tasks),
+        tasks=page.items,
+        items=page.items,
+        total=page.total,
+        limit=page.limit,
+        offset=page.offset,
+        returned_count=len(page.items),
+        has_next=page.has_next,
     )
 
 

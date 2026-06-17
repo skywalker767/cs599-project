@@ -25,14 +25,15 @@ CLARIFICATION_SYSTEM = (
     "Use multi_choice when multiple options can reasonably combine; otherwise single_choice. "
     "For multi_choice, set incompatible_with on each option (list of option values that "
     "cannot be selected together with it). For single_choice omit incompatible_with. "
-    "Return ONLY valid JSON: {\"questions\": [{\"question_id\": \"snake_case_unique\", "
-    "\"question_text\": \"...\", \"question_type\": \"single_choice|multi_choice\", "
-    "\"options\": [{\"label\": \"...\", \"value\": \"snake_case\", "
-    "\"description\": \"...\"|null, \"incompatible_with\": [\"other_value\"]|[]}], "
-    "\"default_value\": \"...\", \"reason\": \"why this matters\"}]}. "
+    'Return ONLY valid JSON: {"questions": [{"question_id": "snake_case_unique", '
+    '"question_text": "...", "question_type": "single_choice|multi_choice", '
+    '"options": [{"label": "...", "value": "snake_case", '
+    '"description": "..."|null, "incompatible_with": ["other_value"]|[]}], '
+    '"default_value": "...", "reason": "why this matters"}]}. '
     "Use Chinese for question_text, labels and reason. Agent hint: clarification."
 )
 # ── Reusable question builders ─────────────────────────────────
+
 
 def _q(
     question_id: str,
@@ -492,9 +493,9 @@ DOMAIN_OPTIONAL: dict[str, list[ClarificationQuestion]] = {
 
 # Legacy alias for tests/docs
 DOMAIN_QUESTIONS: dict[str, list[ClarificationQuestion]] = {
-    k: DOMAIN_CORE[k] + DOMAIN_OPTIONAL.get(k, [])[:2]
-    for k in DOMAIN_CORE
+    k: DOMAIN_CORE[k] + DOMAIN_OPTIONAL.get(k, [])[:2] for k in DOMAIN_CORE
 }
+
 
 class ClarificationAgent:
     """Generate clarification multiple-choice questions before generation."""
@@ -541,7 +542,9 @@ class ClarificationAgent:
             }
         else:
             llm_questions, self._last_llm_meta = self._try_llm_questions(
-                user_input, task_type, merged,
+                user_input,
+                task_type,
+                merged,
             )
             for q in llm_questions:
                 self._last_sources[q.question_id] = "llm"
@@ -593,7 +596,10 @@ class ClarificationAgent:
             return questions[: self.LLM_MAX_QUESTIONS], meta
         except Exception as exc:
             return [], llm_trace_meta(
-                self.requested_provider, actual, False, False,
+                self.requested_provider,
+                actual,
+                False,
+                False,
                 extra={"llm_error": str(exc)[:120]},
             )
 
@@ -690,6 +696,7 @@ class ClarificationAgent:
             if q.question_id not in seen:
                 seen[q.question_id] = q
         return list(seen.values())
+
     @staticmethod
     def _answer_values(answer) -> list[str]:
         if getattr(answer, "selected_values", None):
@@ -723,7 +730,9 @@ class ClarificationAgent:
 
     def apply_in_workflow(self, state: WorkflowState) -> WorkflowState:
         """Generate questions, resolve answers, store in state, write trace."""
-        skip_llm = bool(state.request.clarification_answers) and not state.request.skip_clarification
+        skip_llm = (
+            bool(state.request.clarification_answers) and not state.request.skip_clarification
+        )
         questions = self.generate_questions(
             state.request.user_input,
             state.task_type,
@@ -759,7 +768,9 @@ class ClarificationAgent:
                 "defaults": {q.question_id: q.default_value for q in questions},
                 "resolved_answers": resolved,
                 "user_selected": user_answers,
+                "clarification_needed": not state.request.skip_clarification,
                 **self._last_llm_meta,
             },
+            pipeline_step="clarification_needed",
         )
         return state

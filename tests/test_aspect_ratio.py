@@ -28,3 +28,10 @@ def test_aspect_ratio_not_all_square(ratio, expected_size, orientation):
 def test_distinct_sizes_for_common_ratios():
     sizes = {resolve_aspect_ratio(r).size for r in ["1:1", "16:9", "9:16", "4:3"]}
     assert len(sizes) >= 3
+
+
+def test_unsupported_aspect_ratio_normalized_with_warning():
+    res = resolve_aspect_ratio("21:9")
+    assert res.normalized is True
+    assert res.normalization_reason
+    assert res.width > 0 and res.height > 0

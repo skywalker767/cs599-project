@@ -31,11 +31,13 @@ class AcademicFigureAgent:
             enrichment["preferred_output"] = (
                 ["png", "svg", "mermaid"] if fmt == "png" else ["svg", "mermaid", "png"]
             )
-            state.visual_spec.constraints.extend([
-                "模块对齐排列",
-                "箭头表示数据/控制流",
-                "标签字号不小于 10pt",
-            ])
+            state.visual_spec.constraints.extend(
+                [
+                    "模块对齐排列",
+                    "箭头表示数据/控制流",
+                    "标签字号不小于 10pt",
+                ]
+            )
 
         state.domain_enrichment = enrichment
         append_trace(

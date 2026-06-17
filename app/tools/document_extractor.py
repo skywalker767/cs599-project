@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import io
 import re
+from dataclasses import dataclass
 
+from app.config import get_settings
 from app.llm.parsing import parse_json_from_text
 
 MAX_CHARS = 12000  # cap text fed to the LLM to control latency/cost
@@ -39,24 +41,63 @@ class DocumentExtractionError(RuntimeError):
     """Raised when a document cannot be parsed."""
 
 
-def extract_text(filename: str, data: bytes) -> str:
-    """Extract plain text from a PDF or text/markdown upload."""
+@dataclass
+class DocumentExtractionResult:
+    """Structured PDF/text extraction outcome."""
+
+    extracted_text: str
+    needs_ocr: bool = False
+    warning: str | None = None
+    page_count: int = 0
+    file_type: str = "unknown"
+
+
+def extract_document(filename: str, data: bytes) -> DocumentExtractionResult:
+    """Extract plain text from a PDF or text/markdown upload with OCR hints."""
     name = (filename or "").lower()
     if name.endswith(".pdf"):
-        return _extract_pdf(data)
+        return _extract_pdf_structured(data)
     if name.endswith((".txt", ".md", ".markdown")):
-        return _normalize(data.decode("utf-8", errors="ignore"))
+        text = _normalize(data.decode("utf-8", errors="ignore"))
+        if not text.strip():
+            raise DocumentExtractionError("文本文件内容为空。")
+        return DocumentExtractionResult(
+            extracted_text=text,
+            file_type="text",
+            page_count=1,
+        )
+    # Unsupported explicit types
+    known_bad = (".doc", ".docx", ".xlsx", ".pptx", ".zip")
+    if any(name.endswith(ext) for ext in known_bad):
+        raise DocumentExtractionError(f"不支持的文件类型：{filename}。请上传 PDF 或 TXT/Markdown。")
     # Fallback: try PDF first, then utf-8 text
     try:
-        return _extract_pdf(data)
+        return _extract_pdf_structured(data)
     except DocumentExtractionError:
-        return _normalize(data.decode("utf-8", errors="ignore"))
+        text = _normalize(data.decode("utf-8", errors="ignore"))
+        if not text.strip():
+            raise DocumentExtractionError(
+                f"无法解析文件 {filename}：不是有效的 PDF 或文本。"
+            ) from None
+        return DocumentExtractionResult(extracted_text=text, file_type="text")
 
 
-def _extract_pdf(data: bytes) -> str:
+def extract_text(filename: str, data: bytes) -> str:
+    """Backward-compatible text extraction (raises on empty / scanned-only PDF)."""
+    result = extract_document(filename, data)
+    if result.needs_ocr:
+        raise DocumentExtractionError(
+            result.warning or "未能从 PDF 中提取到文字（可能是扫描件/图片型 PDF）。"
+        )
+    if not result.extracted_text.strip():
+        raise DocumentExtractionError("文档内容为空或无法解析。")
+    return result.extracted_text
+
+
+def _extract_pdf_structured(data: bytes) -> DocumentExtractionResult:
     try:
         from pypdf import PdfReader
-    except ImportError as exc:  # pragma: no cover - dependency guard
+    except ImportError as exc:  # pragma: no cover
         raise DocumentExtractionError(
             "pypdf 未安装，无法解析 PDF。请运行 pip install pypdf"
         ) from exc
@@ -66,6 +107,10 @@ def _extract_pdf(data: bytes) -> str:
     except Exception as exc:
         raise DocumentExtractionError(f"PDF 解析失败：{exc}") from exc
 
+    page_count = len(reader.pages)
+    if page_count == 0:
+        raise DocumentExtractionError("PDF 为空（0 页），无法提取内容。")
+
     parts: list[str] = []
     for page in reader.pages:
         try:
@@ -73,11 +118,30 @@ def _extract_pdf(data: bytes) -> str:
         except Exception:
             continue
     text = _normalize("\n".join(parts))
+
     if not text.strip():
-        raise DocumentExtractionError(
-            "未能从 PDF 中提取到文字（可能是扫描件/图片型 PDF）。"
+        settings = get_settings()
+        ocr = (settings.ocr_provider or "none").lower().strip()
+        warning = (
+            "未能从 PDF 中提取到可搜索文字，该文件可能是扫描件或图片型 PDF。"
+            "当前 OCR_PROVIDER=none，未启用 OCR。"
         )
-    return text
+        if ocr != "none":
+            warning += f" 已配置 OCR_PROVIDER={ocr}，但 OCR 集成尚未在此版本中启用。"
+        return DocumentExtractionResult(
+            extracted_text="",
+            needs_ocr=True,
+            warning=warning,
+            page_count=page_count,
+            file_type="pdf",
+        )
+
+    return DocumentExtractionResult(
+        extracted_text=text,
+        needs_ocr=False,
+        page_count=page_count,
+        file_type="pdf",
+    )
 
 
 def _normalize(text: str) -> str:
@@ -123,7 +187,9 @@ def _sanitize_summary(parsed: dict, text: str) -> dict:
     problem = str(parsed.get("problem") or "").strip()[:200]
     suggested = str(parsed.get("suggested_input") or "").strip()
     if not suggested:
-        suggested = _build_suggested_input(title, steps, contributions, arch_highlights, perf_metrics)
+        suggested = _build_suggested_input(
+            title, steps, contributions, arch_highlights, perf_metrics
+        )
 
     return {
         "title": title,
@@ -135,6 +201,8 @@ def _sanitize_summary(parsed: dict, text: str) -> dict:
         "performance_metrics": perf_metrics,
         "suggested_input": suggested,
         "char_count": len(text),
+        "needs_ocr": False,
+        "extraction_warning": None,
     }
 
 
@@ -151,6 +219,8 @@ def _heuristic_summary(text: str) -> dict:
         "performance_metrics": [],
         "suggested_input": _build_suggested_input(title, steps, [], [], []),
         "char_count": len(text),
+        "needs_ocr": False,
+        "extraction_warning": None,
     }
 
 

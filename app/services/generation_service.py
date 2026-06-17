@@ -25,13 +25,14 @@ from app.models.schemas import (
     DocumentSummary,
     GenerationRequest,
     GenerationResult,
+    PaginatedTasks,
     StatsResponse,
     TaskSummary,
     WorkflowState,
 )
 from app.tools.document_extractor import (
     DocumentExtractionError,
-    extract_text,
+    extract_document,
     summarize_document,
 )
 
@@ -72,11 +73,28 @@ class GenerationService:
 
     def extract_document(self, filename: str, data: bytes) -> DocumentExtractResponse:
         """Extract text from an uploaded document and distill a structured overview."""
-        text = extract_text(filename, data)
+        extraction = extract_document(filename, data)
+        if extraction.needs_ocr:
+            return DocumentExtractResponse(
+                filename=filename,
+                summary=DocumentSummary(
+                    title="扫描件 PDF",
+                    needs_ocr=True,
+                    extraction_warning=extraction.warning,
+                    char_count=0,
+                ),
+                document_context="",
+                suggested_task_type="academic_figure",
+                suggested_aspect_ratio="16:9",
+            )
+
+        text = extraction.extracted_text
         if not text.strip():
             raise DocumentExtractionError("文档内容为空或无法解析。")
 
         summary_dict = summarize_document(text, self.clarification.llm)
+        summary_dict["needs_ocr"] = False
+        summary_dict["extraction_warning"] = extraction.warning
         summary = DocumentSummary(**summary_dict)
 
         context_parts = [f"【文档标题】{summary.title}"]
@@ -124,9 +142,10 @@ class GenerationService:
     def delete_task(self, db: Session, task_id: str) -> bool:
         return delete_task_record(db, task_id)
 
-    def list_tasks(self, db: Session, limit: int = 50, offset: int = 0) -> list[TaskSummary]:
+    def list_tasks(self, db: Session, limit: int = 50, offset: int = 0) -> PaginatedTasks:
         rows = list_task_records(db, limit=limit, offset=offset)
-        summaries = []
+        total = count_task_records(db)
+        summaries: list[TaskSummary] = []
         for row in rows:
             try:
                 result = GenerationResult.model_validate(row)
@@ -144,7 +163,13 @@ class GenerationService:
                 )
             except Exception:
                 continue
-        return summaries
+        return PaginatedTasks(
+            items=summaries,
+            total=total,
+            limit=limit,
+            offset=offset,
+            has_next=(offset + len(summaries)) < total,
+        )
 
     def count_tasks(self, db: Session) -> int:
         return count_task_records(db)
@@ -171,9 +196,7 @@ class GenerationService:
             durations.append(result.duration_ms or 0)
             risk_total += result.evaluation.risk_count
             by_type[result.task_type] = by_type.get(result.task_type, 0) + 1
-            score_sum_by_type[result.task_type] = (
-                score_sum_by_type.get(result.task_type, 0) + score
-            )
+            score_sum_by_type[result.task_type] = score_sum_by_type.get(result.task_type, 0) + score
             for name, low, high in _SCORE_BUCKETS:
                 if low <= score <= high:
                     buckets[name] += 1
@@ -182,9 +205,7 @@ class GenerationService:
         total = len(scores)
         avg_score = round(sum(scores) / total, 1) if total else 0.0
         avg_duration = int(sum(durations) / total) if total else 0
-        avg_by_type = {
-            t: round(score_sum_by_type[t] / by_type[t], 1) for t in by_type
-        }
+        avg_by_type = {t: round(score_sum_by_type[t] / by_type[t], 1) for t in by_type}
 
         return StatsResponse(
             total_tasks=count_task_records(db),

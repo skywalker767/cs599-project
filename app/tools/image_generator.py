@@ -3,27 +3,15 @@
 from __future__ import annotations
 
 import base64
+import json
 import logging
 import time
 from pathlib import Path
 
 from app.config import get_settings
-
-logger = logging.getLogger(__name__)
-
 from app.tools.aspect_ratio import resolve_aspect_ratio
 
-_ASPECT_TO_SIZE = {
-    "1:1": "1024x1024",
-    "16:9": "1792x1024",
-    "9:16": "1024x1792",
-    "4:5": "1024x1536",
-    "3:4": "1024x1536",
-    "4:3": "1536x1024",
-    "A4": "1024x1536",
-    "A4 portrait": "1024x1536",
-    "A4 landscape": "1536x1024",
-}
+logger = logging.getLogger(__name__)
 
 _RETRYABLE_STATUS = {429, 502, 503, 524}
 _MAX_ATTEMPTS = 3
@@ -70,9 +58,7 @@ class OpenAIImageGenerator:
                 "Use get_image_generator() for mock provider; OpenAIImageGenerator is API-only."
             )
         if provider != "openai":
-            raise ImageProviderError(
-                f"Unknown IMAGE_PROVIDER='{provider}'. Supported: openai"
-            )
+            raise ImageProviderError(f"Unknown IMAGE_PROVIDER='{provider}'. Supported: openai")
 
         try:
             import httpx
@@ -101,12 +87,40 @@ class OpenAIImageGenerator:
             for model in models:
                 try:
                     image_bytes = self._request_image(
-                        httpx, http_timeout, url, api_key, model, image_prompt, size,
+                        httpx,
+                        http_timeout,
+                        url,
+                        api_key,
+                        model,
+                        image_prompt,
+                        size,
                     )
                     out_path.write_bytes(image_bytes)
+                    meta_path = out_path.with_suffix(".openai.json")
+                    meta_path.write_text(
+                        json.dumps(
+                            {
+                                "provider": self.provider_name,
+                                "requested_aspect_ratio": resolution.requested_ratio,
+                                "resolved_width": resolution.width,
+                                "resolved_height": resolution.height,
+                                "ideal_width": resolution.ideal_width,
+                                "ideal_height": resolution.ideal_height,
+                                "api_size": resolution.size,
+                                "normalized": resolution.normalized,
+                                "normalization_reason": resolution.normalization_reason,
+                                "model": model,
+                            },
+                            indent=2,
+                            ensure_ascii=False,
+                        ),
+                        encoding="utf-8",
+                    )
                     logger.info(
                         "Image saved via API: %s (model=%s, attempt=%s)",
-                        out_path, model, attempt + 1,
+                        out_path,
+                        model,
+                        attempt + 1,
                     )
                     return out_path
                 except ImageProviderError as exc:
@@ -114,7 +128,9 @@ class OpenAIImageGenerator:
                     if self._is_retryable(exc):
                         logger.warning(
                             "Image API retryable error (model=%s, attempt=%s): %s",
-                            model, attempt + 1, exc,
+                            model,
+                            attempt + 1,
+                            exc,
                         )
                         continue
                     raise
@@ -135,9 +151,9 @@ class OpenAIImageGenerator:
     @staticmethod
     def _is_retryable(exc: ImageProviderError) -> bool:
         msg = str(exc)
-        return any(f" {code} " in f" {msg} " or f"({code})" in msg for code in _RETRYABLE_STATUS) or (
-            "timeout" in msg.lower() or "524" in msg
-        )
+        return any(
+            f" {code} " in f" {msg} " or f"({code})" in msg for code in _RETRYABLE_STATUS
+        ) or ("timeout" in msg.lower() or "524" in msg)
 
     @staticmethod
     def _request_image(
@@ -164,9 +180,7 @@ class OpenAIImageGenerator:
             resp = client.post(url, headers=headers, json=payload)
             if resp.status_code >= 400:
                 detail = resp.text[:500]
-                raise ImageProviderError(
-                    f"Image API {resp.status_code} (model={model}): {detail}"
-                )
+                raise ImageProviderError(f"Image API {resp.status_code} (model={model}): {detail}")
             data = resp.json()
 
         item = (data.get("data") or [{}])[0]

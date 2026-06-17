@@ -58,7 +58,7 @@ class MockImageGenerator:
         hue = int(digest[:6], 16) % 200
         rgb = (40 + hue % 80, 80 + (hue // 2) % 80, 120 + hue % 60)
 
-        png_bytes = _solid_png(resolution.width, min(resolution.height, 256), rgb)
+        png_bytes = _solid_png(resolution.width, resolution.height, rgb)
         out_path.write_bytes(png_bytes)
 
         meta = {
@@ -68,6 +68,11 @@ class MockImageGenerator:
             "task_type": task_type,
             "title": title,
             "prompt_preview": prompt[:200],
+            "requested_aspect_ratio": resolution.requested_ratio,
+            "resolved_width": resolution.width,
+            "resolved_height": resolution.height,
+            "ideal_width": resolution.ideal_width,
+            "ideal_height": resolution.ideal_height,
             "aspect_ratio": resolution.requested_ratio,
             "normalized_size": resolution.size,
             "width": resolution.width,

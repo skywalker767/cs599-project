@@ -40,8 +40,6 @@ def get_llm(provider: str | None = None) -> tuple[BaseLLM, str]:
     instance = cls()
     if not instance.is_available():
         key_name = "OPENAI_API_KEY" if requested == "openai" else "DEEPSEEK_API_KEY"
-        raise LLMProviderError(
-            f"LLM provider '{requested}' requires {key_name} in .env"
-        )
+        raise LLMProviderError(f"LLM provider '{requested}' requires {key_name} in .env")
 
     return instance, requested

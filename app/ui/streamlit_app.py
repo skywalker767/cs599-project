@@ -214,6 +214,7 @@ render_hero(
     "Clarification → Visual Spec → Multi-Agent · 电商 · 论文 · PPT 视觉生成",
 )
 
+
 # ── Cached helpers ─────────────────────────────────────────────
 @st.cache_data(ttl=15, show_spinner=False)
 def _cached_tasks(limit: int = 50) -> list[dict]:
@@ -329,7 +330,9 @@ with studio_tab:
                     with st.spinner("解析文档并提炼概要中…"):
                         try:
                             data = client.extract_document(
-                                uploaded.name, uploaded.getvalue(), uploaded.type or "application/pdf"
+                                uploaded.name,
+                                uploaded.getvalue(),
+                                uploaded.type or "application/pdf",
                             )
                             summary = data.get("summary", {})
                             suggested = (summary.get("suggested_input") or "").strip()
@@ -364,11 +367,15 @@ with studio_tab:
                     if doc_summary.get("method_steps"):
                         st.markdown("**方法流程**：" + " → ".join(doc_summary["method_steps"]))
                     if doc_summary.get("architecture_highlights"):
-                        st.markdown("**架构要素**：" + "、".join(doc_summary["architecture_highlights"]))
+                        st.markdown(
+                            "**架构要素**：" + "、".join(doc_summary["architecture_highlights"])
+                        )
                     if doc_summary.get("contributions"):
                         st.markdown("**创新贡献**：" + "；".join(doc_summary["contributions"]))
                     if doc_summary.get("performance_metrics"):
-                        st.markdown("**性能指标**：" + "；".join(doc_summary["performance_metrics"]))
+                        st.markdown(
+                            "**性能指标**：" + "；".join(doc_summary["performance_metrics"])
+                        )
                     if doc_summary.get("keywords"):
                         st.caption("关键词：" + "、".join(doc_summary["keywords"]))
                     if st.button("清除文档", key="clear_doc"):
@@ -421,10 +428,14 @@ with studio_tab:
                 )
             with opt2:
                 with st.expander("风格（可选）", expanded=False):
-                    st.text_input("风格", key="style_preference", placeholder="风格偏好（留空自动推断）")
+                    st.text_input(
+                        "风格", key="style_preference", placeholder="风格偏好（留空自动推断）"
+                    )
             with opt3:
                 with st.expander("受众（可选）", expanded=False):
-                    st.text_input("受众", key="target_audience", placeholder="目标受众（留空自动推断）")
+                    st.text_input(
+                        "受众", key="target_audience", placeholder="目标受众（留空自动推断）"
+                    )
             with opt4:
                 with st.expander("比例（可选）", expanded=False):
                     st.text_input("比例", key="aspect_ratio", placeholder="宽高比（留空默认）")
@@ -575,9 +586,7 @@ with more_tab:
         st.json({"通过率": f"{br.get('pass_rate', 0)*100:.0f}%", "案例": br.get("total_cases")})
 
     st.divider()
-    st.markdown(
-        """
-**工作流**  
+    st.markdown("""
+**工作流**
 用户输入 → 路由 → 澄清选择题 → Requirement → Visual Spec → Prompt → 生成 → 评估
-        """
-    )
+        """)

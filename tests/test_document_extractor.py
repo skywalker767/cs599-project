@@ -14,6 +14,8 @@ from app.main import app
 from app.models.database import Base, get_db
 from app.tools.document_extractor import (
     DocumentExtractionError,
+    DocumentExtractionResult,
+    extract_document,
     extract_text,
     summarize_document,
 )
@@ -40,32 +42,69 @@ def client():
     app.dependency_overrides.clear()
 
 
-def _make_pdf(text: str) -> bytes:
-    """Build a minimal one-page PDF containing the given text."""
-    pypdf = pytest.importorskip("pypdf")
+def _make_blank_pdf() -> bytes:
+    pytest.importorskip("pypdf")
     from pypdf import PdfWriter
 
-    # pypdf can't easily author text; use reportlab if present, else a raw PDF.
-    try:
-        from reportlab.pdfgen import canvas  # type: ignore
-
-        buf = io.BytesIO()
-        c = canvas.Canvas(buf)
-        c.drawString(72, 720, text)
-        c.save()
-        return buf.getvalue()
-    except ImportError:
-        writer = PdfWriter()
-        writer.add_blank_page(width=200, height=200)
-        buf = io.BytesIO()
-        writer.write(buf)
-        return buf.getvalue()
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    buf = io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()
 
 
 def test_extract_text_from_plain_text():
     data = "Deep Learning Method\nWe propose a two-branch network.".encode("utf-8")
     text = extract_text("paper.txt", data)
     assert "two-branch network" in text
+
+
+def test_extract_document_text_pdf():
+    try:
+        from reportlab.pdfgen import canvas  # type: ignore
+
+        buf = io.BytesIO()
+        c = canvas.Canvas(buf)
+        c.drawString(72, 720, "VisionFlow academic paper on multi-agent pipelines.")
+        c.save()
+        pdf_bytes = buf.getvalue()
+    except ImportError:
+        pytest.skip("reportlab not installed for PDF text fixture")
+
+    result = extract_document("paper.pdf", pdf_bytes)
+    assert isinstance(result, DocumentExtractionResult)
+    assert not result.needs_ocr
+    assert "multi-agent" in result.extracted_text
+
+
+def test_extract_empty_pdf_raises():
+    with pytest.raises(DocumentExtractionError):
+        extract_text("broken.pdf", b"not-a-pdf")
+
+
+def test_scanned_pdf_needs_ocr():
+    result = extract_document("scan.pdf", _make_blank_pdf())
+    assert result.needs_ocr is True
+    assert result.extracted_text == ""
+    assert result.warning
+    assert "OCR" in result.warning or "扫描" in result.warning
+
+
+def test_scanned_pdf_endpoint_returns_warning(client):
+    resp = client.post(
+        "/extract",
+        files={"file": ("scan.pdf", _make_blank_pdf(), "application/pdf")},
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["summary"]["needs_ocr"] is True
+    assert body["summary"]["extraction_warning"]
+    assert body["document_context"] == ""
+
+
+def test_unsupported_file_type_raises():
+    with pytest.raises(DocumentExtractionError, match="不支持"):
+        extract_document("slides.pptx", b"fake")
 
 
 def test_summarize_document_fallback_without_llm():
@@ -79,11 +118,6 @@ def test_summarize_document_fallback_without_llm():
     assert summary["title"]
     assert summary["method_steps"]
     assert summary["suggested_input"]
-
-
-def test_extract_empty_pdf_raises():
-    with pytest.raises(DocumentExtractionError):
-        extract_text("scan.pdf", b"%PDF-1.4 broken")
 
 
 def test_extract_endpoint_with_text_upload(client):
@@ -101,7 +135,6 @@ def test_extract_endpoint_with_text_upload(client):
 
 
 def test_generate_with_document_context_only(client):
-    """Empty user_input is allowed when document_context is provided."""
     payload = {
         "user_input": "",
         "task_type": "academic_figure",

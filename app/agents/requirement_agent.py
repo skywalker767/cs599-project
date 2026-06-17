@@ -77,7 +77,9 @@ class RequirementAgent:
         requirement = self._parse_with_rules(text, task_type, req)
         if getattr(req, "document_context", None):
             requirement["document_context"] = req.document_context
-        requirement = self._merge_clarification(requirement, state.clarification_resolved, task_type)
+        requirement = self._merge_clarification(
+            requirement, state.clarification_resolved, task_type
+        )
 
         llm_meta = llm_trace_meta(self.requested_provider, self.llm.provider_name, False, False)
         llm_data, llm_meta = self._try_llm(text, task_type, req)
@@ -114,7 +116,8 @@ class RequirementAgent:
 
         if clarification.get("style"):
             requirement["style"] = STYLE_MAP.get(
-                clarification["style"], clarification["style"],
+                clarification["style"],
+                clarification["style"],
             )
         if clarification.get("aspect_ratio"):
             requirement["aspect_ratio"] = clarification["aspect_ratio"]
@@ -126,7 +129,9 @@ class RequirementAgent:
         if task_type == "ecommerce_banner":
             platform = clarification.get("platform")
             if platform:
-                requirement["scenario"] = PLATFORM_SCENARIO.get(platform, requirement.get("scenario", ""))
+                requirement["scenario"] = PLATFORM_SCENARIO.get(
+                    platform, requirement.get("scenario", "")
+                )
             goal = clarification.get("marketing_goal")
             if goal:
                 requirement["marketing_goal"] = goal
@@ -160,7 +165,8 @@ class RequirementAgent:
             ctx = clarification.get("presentation_context")
             if ctx:
                 requirement["target_audience"] = PRESENTATION_AUDIENCE.get(
-                    ctx, requirement.get("target_audience", ""),
+                    ctx,
+                    requirement.get("target_audience", ""),
                 )
             if clarification.get("layout_blank"):
                 requirement["layout_blank"] = clarification["layout_blank"]
@@ -215,7 +221,7 @@ class RequirementAgent:
             for kw in ("商品", "产品", "product"):
                 if kw in lower:
                     idx = lower.find(kw)
-                    return text[max(0, idx - 5): idx + 20].strip() or "促销商品"
+                    return text[max(0, idx - 5) : idx + 20].strip() or "促销商品"
             return "促销商品"
         if task_type == "academic_figure":
             for kw in ("方法", "模型", "pipeline", "framework"):

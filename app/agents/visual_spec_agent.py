@@ -88,7 +88,11 @@ class VisualSpecAgent:
         provenance: dict[str, str] = {}
 
         title = self._field_with_provenance(
-            req.get("main_subject"), "视觉内容", "title", provenance, max_len=60,
+            req.get("main_subject"),
+            "视觉内容",
+            "title",
+            provenance,
+            max_len=60,
         )
         key_elements = list(defaults["key_elements"])
         for el in key_elements:
@@ -101,30 +105,53 @@ class VisualSpecAgent:
             for w in words[:3]:
                 provenance[f"key_element:{w}"] = "user_input"
 
-        style = self._field_with_provenance(req.get("style"), defaults["style"], "style", provenance)
-        purpose = self._field_with_provenance(req.get("purpose"), defaults["purpose"], "purpose", provenance)
-        scenario = self._field_with_provenance(req.get("scenario"), defaults["scenario"], "scenario", provenance)
+        style = self._field_with_provenance(
+            req.get("style"), defaults["style"], "style", provenance
+        )
+        purpose = self._field_with_provenance(
+            req.get("purpose"), defaults["purpose"], "purpose", provenance
+        )
+        scenario = self._field_with_provenance(
+            req.get("scenario"), defaults["scenario"], "scenario", provenance
+        )
         constraints = list(defaults["constraints"])
         avoid = list(defaults["avoid"])
         text_requirements = list(defaults["text_requirements"])
         evaluation_dimensions = list(defaults["evaluation_dimensions"])
         output_format = req.get("output_format") or defaults["output_format"]
-        provenance.setdefault("output_format", "default" if not req.get("output_format") else "user_input")
+        provenance.setdefault(
+            "output_format", "default" if not req.get("output_format") else "user_input"
+        )
 
         aspect_ratio = req.get("aspect_ratio") or state.request.aspect_ratio or "16:9"
-        provenance["aspect_ratio"] = "user_input" if req.get("aspect_ratio") or state.request.aspect_ratio else "default"
+        provenance["aspect_ratio"] = (
+            "user_input" if req.get("aspect_ratio") or state.request.aspect_ratio else "default"
+        )
 
         target_audience = req.get("target_audience") or state.request.target_audience or "通用受众"
         provenance["target_audience"] = (
-            "user_input" if (req.get("target_audience") or state.request.target_audience) else "default"
+            "user_input"
+            if (req.get("target_audience") or state.request.target_audience)
+            else "default"
         )
 
-        key_elements, constraints, avoid, text_requirements, evaluation_dimensions, output_format = (
-            self._apply_clarification_to_spec(
-                task_type, clarification, req,
-                key_elements, constraints, avoid, text_requirements,
-                evaluation_dimensions, output_format,
-            )
+        (
+            key_elements,
+            constraints,
+            avoid,
+            text_requirements,
+            evaluation_dimensions,
+            output_format,
+        ) = self._apply_clarification_to_spec(
+            task_type,
+            clarification,
+            req,
+            key_elements,
+            constraints,
+            avoid,
+            text_requirements,
+            evaluation_dimensions,
+            output_format,
         )
 
         llm_meta = llm_trace_meta(self.requested_provider, self.llm.provider_name, False, False)
@@ -143,9 +170,21 @@ class VisualSpecAgent:
                 for el in key_elements:
                     provenance[f"key_element:{el}"] = "inferred"
 
-        product_poster = self._build_product_fields(req, key_elements, provenance) if task_type == "ecommerce_banner" else None
-        educational = self._build_educational_fields(req, key_elements, provenance) if task_type == "ppt_visual" else None
-        academic = self._build_academic_fields(req, key_elements, output_format, provenance) if task_type == "academic_figure" else None
+        product_poster = (
+            self._build_product_fields(req, key_elements, provenance)
+            if task_type == "ecommerce_banner"
+            else None
+        )
+        educational = (
+            self._build_educational_fields(req, key_elements, provenance)
+            if task_type == "ppt_visual"
+            else None
+        )
+        academic = (
+            self._build_academic_fields(req, key_elements, output_format, provenance)
+            if task_type == "academic_figure"
+            else None
+        )
 
         main_subject = req.get("main_subject") or title
         provenance["main_subject"] = "user_input" if req.get("main_subject") else "inferred"
@@ -184,6 +223,7 @@ class VisualSpecAgent:
                 "field_provenance": provenance,
                 **llm_meta,
             },
+            pipeline_step="visual_spec_created",
         )
         return state
 
@@ -204,16 +244,25 @@ class VisualSpecAgent:
         return val[:max_len] if max_len else val
 
     def _build_product_fields(
-        self, req: dict, key_elements: list[str], provenance: dict[str, str],
+        self,
+        req: dict,
+        key_elements: list[str],
+        provenance: dict[str, str],
     ) -> ProductPosterFields:
         user_input = req.get("user_input", "")
-        product_name = req.get("main_subject") or self._extract_quoted(user_input) or key_elements[0]
-        provenance["product_poster.product_name"] = "user_input" if req.get("main_subject") else "inferred"
+        product_name = (
+            req.get("main_subject") or self._extract_quoted(user_input) or key_elements[0]
+        )
+        provenance["product_poster.product_name"] = (
+            "user_input" if req.get("main_subject") else "inferred"
+        )
 
         benefits = [w for w in re.findall(r"『([^』]+)』|「([^」]+)」", user_input) if any(w)]
         benefits = [b[0] or b[1] for b in benefits] or key_elements[1:3]
         for b in benefits:
-            provenance.setdefault(f"product_poster.benefit:{b}", "user_input" if "『" in user_input else "inferred")
+            provenance.setdefault(
+                f"product_poster.benefit:{b}", "user_input" if "『" in user_input else "inferred"
+            )
 
         cta = "立即抢购" if "抢购" in user_input else ("立即购买" if "购买" in user_input else "")
         provenance["product_poster.cta"] = "user_input" if cta else "default"
@@ -224,13 +273,18 @@ class VisualSpecAgent:
             benefits=benefits[:5],
             cta=cta or "了解更多",
             brand_tone=req.get("style", ""),
-            layout="product-dominant" if "60%" in user_input or "主图" in user_input else "balanced",
+            layout=(
+                "product-dominant" if "60%" in user_input or "主图" in user_input else "balanced"
+            ),
             color_palette=self._extract_colors(user_input),
             typography="bold sans-serif promotional",
         )
 
     def _build_educational_fields(
-        self, req: dict, key_elements: list[str], provenance: dict[str, str],
+        self,
+        req: dict,
+        key_elements: list[str],
+        provenance: dict[str, str],
     ) -> EducationalInfographicFields:
         user_input = req.get("user_input", "")
         topic = req.get("main_subject") or key_elements[0]
@@ -246,7 +300,11 @@ class VisualSpecAgent:
         )
 
     def _build_academic_fields(
-        self, req: dict, key_elements: list[str], output_format: str, provenance: dict[str, str],
+        self,
+        req: dict,
+        key_elements: list[str],
+        output_format: str,
+        provenance: dict[str, str],
     ) -> AcademicDiagramFields:
         entities = key_elements[:6]
         for e in entities:
@@ -288,7 +346,14 @@ class VisualSpecAgent:
         output_format: str,
     ) -> tuple:
         if not clarification:
-            return key_elements, constraints, avoid, text_requirements, evaluation_dimensions, output_format
+            return (
+                key_elements,
+                constraints,
+                avoid,
+                text_requirements,
+                evaluation_dimensions,
+                output_format,
+            )
 
         density = clarification.get("information_density")
         if density == "low":
@@ -306,10 +371,12 @@ class VisualSpecAgent:
         if task_type == "ecommerce_banner":
             compliance = clarification.get("compliance_level")
             if compliance == "conservative":
-                avoid.extend([
-                    "absolute advertising claims",
-                    "exaggerated medical or efficacy claims",
-                ])
+                avoid.extend(
+                    [
+                        "absolute advertising claims",
+                        "exaggerated medical or efficacy claims",
+                    ]
+                )
                 constraints.append("use conservative commercial wording")
             promo = clarification.get("promotion_intensity")
             if promo == "strong":
@@ -351,7 +418,14 @@ class VisualSpecAgent:
             elif strength == "strong":
                 evaluation_dimensions.append("visual impact")
 
-        return key_elements, constraints, avoid, text_requirements, evaluation_dimensions, output_format
+        return (
+            key_elements,
+            constraints,
+            avoid,
+            text_requirements,
+            evaluation_dimensions,
+            output_format,
+        )
 
     def _try_llm(self, req: dict, task_type: str) -> tuple[dict | None, dict]:
         actual = self.llm.provider_name

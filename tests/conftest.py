@@ -6,14 +6,55 @@ import base64
 import json
 
 import pytest
+from PIL import Image, ImageDraw
 
 from app.config import get_settings
 from app.graph import visionflow_graph as vg_module
 from app.services import generation_service as svc_module
 
-TINY_PNG_B64 = (
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
-)
+
+def make_blank_png(
+    width: int = 256, height: int = 256, color: tuple[int, int, int] = (255, 255, 255)
+) -> bytes:
+    img = Image.new("RGB", (width, height), color)
+    import io
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def make_low_contrast_png(width: int = 256, height: int = 256) -> bytes:
+    return make_blank_png(width, height, (200, 202, 201))
+
+
+def make_colorful_png(width: int = 256, height: int = 256) -> bytes:
+    img = Image.new("RGB", (width, height), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    for x in range(0, width, 32):
+        draw.rectangle([x, 0, x + 16, height], fill=(x % 255, 100, 180))
+    import io
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def make_chart_png(width: int = 400, height: int = 300) -> bytes:
+    img = Image.new("RGB", (width, height), (245, 245, 250))
+    draw = ImageDraw.Draw(img)
+    draw.rectangle([40, 120, 80, 180], fill=(70, 130, 220))
+    draw.rectangle([100, 90, 140, 180], fill=(220, 90, 70))
+    draw.rectangle([160, 140, 200, 180], fill=(90, 180, 120))
+    draw.line([(30, 200), (360, 200)], fill=(30, 30, 30), width=2)
+    import io
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+TINY_PNG_B64 = base64.b64encode(make_colorful_png(256, 256)).decode("ascii")
 
 
 def _llm_response(system_prompt: str, user_prompt: str) -> str:
@@ -89,7 +130,9 @@ def _llm_response(system_prompt: str, user_prompt: str) -> str:
 
 
 class _FakeResponse:
-    def __init__(self, data: dict | None = None, content: bytes | None = None, status_code: int = 200):
+    def __init__(
+        self, data: dict | None = None, content: bytes | None = None, status_code: int = 200
+    ):
         self._data = data or {}
         self._content = content or b""
         self.status_code = status_code
@@ -135,12 +178,14 @@ class _FakeHttpxClient:
 def api_test_env(monkeypatch):
     """Force API-only mode with mocked HTTP for all tests."""
     monkeypatch.setenv("LLM_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEMO_MODE", "false")
     monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-test-key")
     monkeypatch.setenv("DEEPSEEK_BASE_URL", "https://api.test/v1")
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test-image-key")
     monkeypatch.setenv("OPENAI_BASE_URL", "https://api.test/v1")
     monkeypatch.setenv("IMAGE_PROVIDER", "openai")
     monkeypatch.setenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
+    monkeypatch.setenv("VISION_EVALUATOR_PROVIDER", "none")
     get_settings.cache_clear()
     vg_module._graph_instance = None
     svc_module._service = None

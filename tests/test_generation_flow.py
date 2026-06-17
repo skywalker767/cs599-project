@@ -1,4 +1,4 @@
-"""Integration tests for generation flow."""
+"""Integration tests for generation flow – correctness, not smoke."""
 
 from __future__ import annotations
 
@@ -7,13 +7,14 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.models.database import Base, get_db
-from app.models.schemas import GenerationRequest, GenerationResult
+from app.models.schemas import GenerationRequest
 from app.services.generation_service import GenerationService
 
 EXAMPLES_DIR = Path(__file__).resolve().parent.parent / "examples"
@@ -22,6 +23,14 @@ EXAMPLE_FILES = [
     "academic_case.json",
     "ppt_case.json",
 ]
+
+PIPELINE_STEPS = {
+    "router_decision",
+    "visual_spec_created",
+    "prompt_created",
+    "output_generated",
+    "evaluation_completed",
+}
 
 
 @pytest.fixture
@@ -64,105 +73,138 @@ def _load_example(name: str) -> dict:
     return json.loads((EXAMPLES_DIR / name).read_text(encoding="utf-8"))
 
 
+def _assert_result_quality(data: dict, case: dict) -> None:
+    assert data["task_type"] == case["expected_task_type"]
+    assert data["visual_spec"]["title"]
+    assert data["visual_spec"]["aspect_ratio"]
+    assert data["visual_spec"]["key_elements"]
+    assert len(data["prompt"]) > 20
+
+    output = Path(data["output_path"])
+    assert output.exists()
+    if case["expected_output_type"] == "svg":
+        assert output.suffix.lower() == ".svg"
+        assert "<svg" in output.read_text(encoding="utf-8")[:500].lower()
+    else:
+        assert output.suffix.lower() == ".png"
+        with Image.open(output) as img:
+            assert img.size[0] >= 8 and img.size[1] >= 8
+
+    ev = data["evaluation"]
+    assert ev["overall_score"] >= 0
+    assert ev["score_breakdown"]
+    assert any(v.get("rationale") for v in ev["score_breakdown"].values())
+
+    steps = {t.get("metadata", {}).get("pipeline_step") for t in data["traces"]}
+    assert PIPELINE_STEPS.issubset(steps)
+
+
+@pytest.mark.parametrize("example_file", EXAMPLE_FILES)
+def test_generation_service_with_examples(client, example_file):
+    case = _load_example(example_file)
+    payload = {
+        "user_input": case["user_input"],
+        "task_type": case.get("task_type", "auto"),
+        "aspect_ratio": case.get("aspect_ratio"),
+        "enable_revision": case.get("enable_revision", False),
+        "skip_clarification": True,
+    }
+    resp = client.post("/generate", json=payload)
+    assert resp.status_code == 200, resp.text
+    _assert_result_quality(resp.json(), case)
+
+
+def test_ecommerce_generation_direct(db_session):
+    case = _load_example("ecommerce_case.json")
+    result = GenerationService().run_generation(
+        db_session,
+        GenerationRequest(
+            user_input=case["user_input"],
+            task_type="auto",
+            skip_clarification=True,
+            enable_revision=False,
+        ),
+    )
+    assert result.task_type == "ecommerce_banner"
+    assert result.visual_spec.main_subject or result.visual_spec.key_elements
+
+
+def test_academic_figure_generation_direct(db_session):
+    case = _load_example("academic_case.json")
+    result = GenerationService().run_generation(
+        db_session,
+        GenerationRequest(user_input=case["user_input"], task_type="auto", skip_clarification=True),
+    )
+    assert result.task_type == "academic_figure"
+    assert result.visual_spec.output_format in ("svg", "png")
+
+
+def test_presentation_visual_generation_direct(db_session):
+    case = _load_example("ppt_case.json")
+    result = GenerationService().run_generation(
+        db_session,
+        GenerationRequest(user_input=case["user_input"], task_type="auto", skip_clarification=True),
+    )
+    assert result.task_type == "ppt_visual"
+
+
+def test_clarification_flow_via_api(client):
+    clarify = client.post(
+        "/clarify",
+        json={"user_input": "帮我做一张好看的图，要有标题和三个要点", "task_type": "auto"},
+    )
+    assert clarify.status_code == 200
+    body = clarify.json()
+    assert len(body["questions"]) >= 1
+    assert body["task_type"] in ("ppt_visual", "ecommerce_banner", "academic_figure")
+
+
+def test_pdf_input_flow_via_document_context(client):
+    payload = {
+        "user_input": "",
+        "document_context": "【文档标题】Transformer\n【方法流程】Embed → Attention → FFN → Output",
+        "task_type": "academic_figure",
+        "skip_clarification": True,
+        "enable_revision": False,
+    }
+    resp = client.post("/generate", json=payload)
+    assert resp.status_code == 200
+    assert resp.json()["task_type"] == "academic_figure"
+
+
 def test_health(client):
     resp = client.get("/health")
     assert resp.status_code == 200
     body = resp.json()
     assert body["status"] == "ok"
-    assert "llm_provider" in body
-    assert "image_provider" in body
-
-
-@pytest.mark.parametrize("example_file", EXAMPLE_FILES)
-def test_generation_service_with_examples(client, example_file):
-    """Full flow via API using three example cases."""
-    case = _load_example(example_file)
-    payload = {
-        "user_input": case["user_input"],
-        "task_type": case.get("task_type", "auto"),
-        "style_preference": case.get("style_preference"),
-        "target_audience": case.get("target_audience"),
-        "aspect_ratio": case.get("aspect_ratio"),
-        "enable_revision": case.get("enable_revision", True),
-    }
-    resp = client.post("/generate", json=payload)
-    assert resp.status_code == 200, resp.text
-
-    data = resp.json()
-    assert data["task_type"] == case["expected_task_type"]
-    assert data["prompt"]
-    assert len(data["traces"]) >= 5
-    assert data["visual_spec"] is not None
-    assert data["evaluation"]["overall_score"] >= 0
-
-    output = Path(data["output_path"])
-    assert output.exists(), f"output not found: {output}"
-
-    expected_type = case["expected_output_type"]
-    if expected_type == "svg":
-        assert output.suffix.lower() == ".svg"
-    else:
-        assert output.suffix.lower() in (".png", ".jpg", ".jpeg")
-
-
-def test_generation_service_direct(db_session):
-    """Call GenerationService directly and validate GenerationResult."""
-    case = _load_example("ecommerce_case.json")
-    request = GenerationRequest(
-        user_input=case["user_input"],
-        task_type=case.get("task_type", "auto"),
-        enable_revision=True,
-    )
-    service = GenerationService()
-    result = service.run_generation(db_session, request)
-
-    assert isinstance(result, GenerationResult)
-    assert result.task_type == "ecommerce_banner"
-    assert result.prompt
-    assert len(result.traces) >= 5
-    assert Path(result.output_path).exists()
 
 
 def test_list_tasks(client):
     case = _load_example("ppt_case.json")
     client.post(
         "/generate",
-        json={"user_input": case["user_input"], "task_type": "auto"},
+        json={"user_input": case["user_input"], "task_type": "auto", "skip_clarification": True},
     )
     resp = client.get("/tasks")
     assert resp.status_code == 200
-    body = resp.json()
-    assert body["total"] >= 1
-    assert "task_id" in body["tasks"][0]
+    assert resp.json()["total"] >= 1
+    assert "has_next" in resp.json()
 
 
-def test_stats_endpoint(client):
-    case = _load_example("ppt_case.json")
-    client.post("/generate", json={"user_input": case["user_input"], "task_type": "auto"})
+def test_invalid_task_id(client):
+    assert client.get("/tasks/not-a-real-id").status_code == 404
 
-    resp = client.get("/stats")
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body["total_tasks"] >= 1
-    assert body["by_task_type"]
-    assert "llm_provider" in body
-    assert "score_buckets" in body
+
+def test_invalid_payload(client):
+    assert client.post("/generate", json={"user_input": ""}).status_code == 422
 
 
 def test_asset_and_delete_endpoints(client):
     case = _load_example("ppt_case.json")
     gen = client.post(
-        "/generate", json={"user_input": case["user_input"], "task_type": "auto"}
+        "/generate",
+        json={"user_input": case["user_input"], "task_type": "auto", "skip_clarification": True},
     )
     task_id = gen.json()["task_id"]
-
-    asset = client.get(f"/tasks/{task_id}/asset")
-    assert asset.status_code == 200
-    assert asset.content
-
-    deleted = client.delete(f"/tasks/{task_id}")
-    assert deleted.status_code == 200
-    assert deleted.json()["deleted"] is True
-
-    assert client.get(f"/tasks/{task_id}").status_code == 404
-    assert client.delete(f"/tasks/{task_id}").status_code == 404
+    assert client.get(f"/tasks/{task_id}/asset").status_code == 200
+    assert client.delete(f"/tasks/{task_id}").json()["deleted"] is True

@@ -41,7 +41,9 @@ class VisionFlowGraph:
         self._graph = self._build_graph()
 
     @staticmethod
-    def _timed_call(state: WorkflowState, fn: Callable[[WorkflowState], WorkflowState]) -> WorkflowState:
+    def _timed_call(
+        state: WorkflowState, fn: Callable[[WorkflowState], WorkflowState]
+    ) -> WorkflowState:
         """Execute an agent step and record duration_ms on the latest trace entry."""
         start = time.perf_counter()
         state = fn(state)

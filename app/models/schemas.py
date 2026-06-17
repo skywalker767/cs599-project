@@ -2,18 +2,24 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from typing import Any, Literal, Optional
-
-import re
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 TaskTypeStr = Literal["ecommerce_banner", "academic_figure", "ppt_visual"]
 VALID_TASK_TYPES = ("ecommerce_banner", "academic_figure", "ppt_visual")
 VALID_ASPECT_RATIOS = (
-    "1:1", "16:9", "9:16", "4:5", "3:4", "4:3",
-    "A4", "A4 portrait", "A4 landscape",
+    "1:1",
+    "16:9",
+    "9:16",
+    "4:5",
+    "3:4",
+    "4:3",
+    "A4",
+    "A4 portrait",
+    "A4 landscape",
 )
 
 
@@ -111,6 +117,8 @@ class DocumentSummary(BaseModel):
     performance_metrics: list[str] = Field(default_factory=list)
     suggested_input: str = ""
     char_count: int = 0
+    needs_ocr: bool = False
+    extraction_warning: str | None = None
 
 
 class DocumentExtractResponse(BaseModel):
@@ -242,6 +250,7 @@ class AgentTrace(BaseModel):
     input_summary: str
     output_summary: str
     metadata: dict[str, Any] = Field(default_factory=dict)
+    warnings: list[str] = Field(default_factory=list)
     timestamp: str = Field(default_factory=utc_now_iso)
     duration_ms: int = Field(0, ge=0, description="Step execution time in milliseconds")
 
@@ -256,11 +265,21 @@ class EvaluationReport(BaseModel):
     traceability_score: int = Field(..., ge=0, le=100)
     risk_count: int = Field(0, ge=0)
     overall_score: int = Field(..., ge=0, le=100)
+    offline_score: int = Field(0, ge=0, le=100)
+    vlm_score: int | None = None
+    evaluator_layers: list[str] = Field(
+        default_factory=list,
+        description="Active evaluator layers: deterministic, heuristic, vlm",
+    )
+    score_breakdown: dict[str, dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Per-dimension score + textual rationale",
+    )
     comments: list[str] = Field(default_factory=list)
     suggestions: list[str] = Field(default_factory=list)
     metric_scores: dict[str, int] = Field(
         default_factory=dict,
-        description="Extended per-metric scores (spec_completeness, prompt_alignment, etc.)",
+        description="Extended per-metric scores",
     )
     warnings: list[str] = Field(default_factory=list)
 
@@ -296,12 +315,32 @@ class TaskSummary(BaseModel):
     created_at: str
 
 
+class PaginatedTasks(BaseModel):
+    """Service-layer paginated task list."""
+
+    items: list[TaskSummary]
+    total: int
+    limit: int = 50
+    offset: int = 0
+    has_next: bool = False
+
+
 class TaskListResponse(BaseModel):
     tasks: list[TaskSummary]
+    items: list[TaskSummary] = Field(default_factory=list)
     total: int
     limit: int = 50
     offset: int = 0
     returned_count: int = 0
+    has_next: bool = False
+
+    @model_validator(mode="after")
+    def sync_items(self) -> "TaskListResponse":
+        if not self.items and self.tasks:
+            self.items = self.tasks
+        elif self.items and not self.tasks:
+            self.tasks = self.items
+        return self
 
 
 class StatsResponse(BaseModel):

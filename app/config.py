@@ -1,10 +1,9 @@
 """Application configuration loaded from environment variables."""
 
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -38,11 +37,17 @@ class Settings(BaseSettings):
     deepseek_api_key: str = ""
     deepseek_model: str = "deepseek-chat"
     deepseek_base_url: str = "https://api.deepseek.com/v1"
-    llm_provider: str = "deepseek"
+    llm_provider: str = "mock"
     llm_enabled: bool = True
 
     image_api_key: str = ""
-    image_provider: str = "openai"
+    # Default mock so clone-and-run works without API keys
+    image_provider: str = "mock"
+
+    # offline | openai (optional VLM scoring)
+    vision_evaluator_provider: str = "none"
+    # none | tesseract (reserved for future OCR)
+    ocr_provider: str = "none"
 
     demo_mode: bool = False
     workflow_debug: bool = False

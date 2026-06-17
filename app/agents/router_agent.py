@@ -8,7 +8,7 @@ from typing import Any
 from app.config import get_settings
 from app.llm.llm_factory import get_llm
 from app.llm.parsing import llm_trace_meta, parse_json_from_text
-from app.models.schemas import RouteResult, TaskTypeStr, VALID_TASK_TYPES, WorkflowState
+from app.models.schemas import VALID_TASK_TYPES, RouteResult, WorkflowState
 from app.tools.trace_logger import append_trace
 
 # Weighted keyword + regex patterns per domain
@@ -40,7 +40,9 @@ ROUTER_LLM_SYSTEM = (
 class TaskRouterAgent:
     """Hybrid task router: deterministic baseline with optional LLM refinement."""
 
-    def __init__(self, llm_client=None, requested_provider: str | None = None, *, auto_llm: bool = True):
+    def __init__(
+        self, llm_client=None, requested_provider: str | None = None, *, auto_llm: bool = True
+    ):
         self.llm_client = llm_client
         self.requested_provider = requested_provider
         if llm_client is None and auto_llm:
@@ -133,7 +135,6 @@ class TaskRouterAgent:
         )
 
     def _llm_route(self, text: str, baseline: RouteResult) -> RouteResult | None:
-        actual = getattr(self.llm_client, "provider_name", "unknown")
         try:
             raw = self.llm_client.generate_text(ROUTER_LLM_SYSTEM, f"user_input:\n{text[:2000]}")
             parsed = parse_json_from_text(raw)
@@ -190,7 +191,9 @@ class TaskRouterAgent:
 
         llm_meta: dict[str, Any] = {}
         if self.requested_provider:
-            actual = getattr(self.llm_client, "provider_name", "none") if self.llm_client else "none"
+            actual = (
+                getattr(self.llm_client, "provider_name", "none") if self.llm_client else "none"
+            )
             llm_meta = llm_trace_meta(
                 self.requested_provider,
                 actual,
@@ -213,6 +216,8 @@ class TaskRouterAgent:
                 "route_result": result.model_dump(),
                 **llm_meta,
             },
+            pipeline_step="router_decision",
+            warnings=[result.fallback_reason] if result.fallback_reason else [],
         )
         return state
 

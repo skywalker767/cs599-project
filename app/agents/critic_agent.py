@@ -59,12 +59,19 @@ class CriticAgent:
             agent_name="CriticAgent",
             step="evaluate_asset",
             input_summary=state.output_path or "no asset",
-            output_summary=f"overall={report.overall_score}, risks={report.risk_count}",
-            metadata={**report.model_dump(), **llm_meta},
+            output_summary=f"overall={report.overall_score}, offline={report.offline_score}",
+            metadata={
+                **report.model_dump(),
+                "evaluator_layers": report.evaluator_layers,
+            },
+            pipeline_step="evaluation_completed",
+            warnings=list(report.warnings),
         )
         return state
 
-    def _try_llm_enhance(self, state: WorkflowState, report: EvaluationReport) -> tuple[dict | None, dict]:
+    def _try_llm_enhance(
+        self, state: WorkflowState, report: EvaluationReport
+    ) -> tuple[dict | None, dict]:
         actual = self.llm.provider_name
         fallback = False
         try:

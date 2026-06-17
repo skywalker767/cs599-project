@@ -105,13 +105,7 @@ def load_task_record(db: Session, task_id: str) -> Optional[dict]:
 
 
 def list_task_records(db: Session, limit: int = 50, offset: int = 0) -> list[dict]:
-    rows = (
-        db.query(TaskORM)
-        .order_by(TaskORM.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
+    rows = db.query(TaskORM).order_by(TaskORM.created_at.desc()).offset(offset).limit(limit).all()
     results = []
     for row in rows:
         data = json.loads(row.data_json)

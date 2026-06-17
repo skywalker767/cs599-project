@@ -46,11 +46,14 @@ def test_route_academic_diagram(router):
     assert result.task_type == "academic_figure"
 
 
-def test_route_ambiguous_defaults_ppt():
+def test_route_ambiguous_triggers_low_confidence():
     router = TaskRouterAgent(auto_llm=False)
     result = router.route(_state(AMBIGUOUS_INPUT))
-    assert result.task_type in ("ppt_visual", "ecommerce_banner", "academic_figure")
     assert result.route_result.confidence <= 0.7
+    assert (
+        any("ambiguous" in e for e in result.route_result.evidence)
+        or result.route_result.confidence <= 0.55
+    )
 
 
 def test_route_mixed_domain(router):

@@ -27,10 +27,12 @@ class EcommerceAgent:
         }
 
         if state.visual_spec:
-            state.visual_spec.constraints.extend([
-                "避免绝对化广告词",
-                "促销信息真实可验证",
-            ])
+            state.visual_spec.constraints.extend(
+                [
+                    "避免绝对化广告词",
+                    "促销信息真实可验证",
+                ]
+            )
             state.visual_spec.avoid.extend(enrichment["forbidden_phrases"])
 
         state.domain_enrichment = enrichment

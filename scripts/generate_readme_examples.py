@@ -84,8 +84,7 @@ def main() -> None:
         slug = case["slug"]
         raw = _load_case(EXAMPLES_DIR / case["json"])
         answers = [
-            ClarificationAnswer(question_id=qid, selected_value=val)
-            for qid, val in case["answers"]
+            ClarificationAnswer(question_id=qid, selected_value=val) for qid, val in case["answers"]
         ]
         request = GenerationRequest(
             user_input=raw["user_input"],

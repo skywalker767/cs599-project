@@ -27,10 +27,12 @@ class PPTVisualAgent:
         }
 
         if state.visual_spec:
-            state.visual_spec.constraints.extend([
-                "保留充足留白",
-                "标题区域不被图形遮挡",
-            ])
+            state.visual_spec.constraints.extend(
+                [
+                    "保留充足留白",
+                    "标题区域不被图形遮挡",
+                ]
+            )
 
         state.domain_enrichment = enrichment
         append_trace(

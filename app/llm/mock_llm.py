@@ -39,17 +39,25 @@ class MockLLM(BaseLLM):
                 ensure_ascii=False,
             )
         if "revision" in sys:
-            return json.dumps({"revised_prompt": user_prompt[:500] + " [revised]"}, ensure_ascii=False)
+            return json.dumps(
+                {"revised_prompt": user_prompt[:500] + " [revised]"}, ensure_ascii=False
+            )
         if "prompt" in sys:
-            return json.dumps({"prompt": f"Subject: demo. Context: {user_prompt[:120]}"}, ensure_ascii=False)
-        return json.dumps({"purpose": "演示", "main_subject": "演示主体", "style": "简洁"}, ensure_ascii=False)
+            return json.dumps(
+                {"prompt": f"Subject: demo. Context: {user_prompt[:120]}"}, ensure_ascii=False
+            )
+        return json.dumps(
+            {"purpose": "演示", "main_subject": "演示主体", "style": "简洁"}, ensure_ascii=False
+        )
 
     @staticmethod
     def _route_response(user_prompt: str) -> str:
         text = user_prompt.lower()
         scores = {
             "ecommerce_banner": len(re.findall(r"商品|促销|电商|banner|product|sale", text)),
-            "academic_figure": len(re.findall(r"论文|流程图|pipeline|diagram|学术|framework", text)),
+            "academic_figure": len(
+                re.findall(r"论文|流程图|pipeline|diagram|学术|framework", text)
+            ),
             "ppt_visual": len(re.findall(r"ppt|汇报|infographic|教学|教育|presentation", text)),
         }
         best = max(scores, key=scores.get)

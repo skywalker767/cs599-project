@@ -30,7 +30,9 @@ def test_trace_provider_metadata_mock(mock_env, tmp_path):
 
     from app.models.database import Base
 
-    engine = create_engine(f"sqlite:///{tmp_path / 'meta.db'}", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        f"sqlite:///{tmp_path / 'meta.db'}", connect_args={"check_same_thread": False}
+    )
     Base.metadata.create_all(bind=engine)
     db = sessionmaker(bind=engine)()
 
@@ -58,7 +60,9 @@ def test_trace_provider_metadata_mock_image(mock_env, tmp_path):
 
     from app.models.database import Base
 
-    engine = create_engine(f"sqlite:///{tmp_path / 'meta2.db'}", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        f"sqlite:///{tmp_path / 'meta2.db'}", connect_args={"check_same_thread": False}
+    )
     Base.metadata.create_all(bind=engine)
     db = sessionmaker(bind=engine)()
 

@@ -41,6 +41,13 @@ def test_image_mock_enabled(monkeypatch):
     assert isinstance(gen, MockImageGenerator)
 
 
+def test_image_default_mock_without_env(monkeypatch):
+    monkeypatch.setenv("IMAGE_PROVIDER", "")
+    monkeypatch.setenv("DEMO_MODE", "false")
+    get_settings.cache_clear()
+    assert isinstance(get_image_generator(), MockImageGenerator)
+
+
 def test_image_requires_api_key_when_openai(monkeypatch):
     monkeypatch.setenv("IMAGE_PROVIDER", "openai")
     monkeypatch.setenv("DEMO_MODE", "false")
@@ -50,3 +57,11 @@ def test_image_requires_api_key_when_openai(monkeypatch):
 
     with pytest.raises(ImageProviderError, match="Image API key required"):
         get_image_generator().generate("t1", "ecommerce_banner", "title", "prompt")
+
+
+def test_unknown_image_provider_value_error(monkeypatch):
+    monkeypatch.setenv("IMAGE_PROVIDER", "azure")
+    monkeypatch.setenv("DEMO_MODE", "false")
+    get_settings.cache_clear()
+    with pytest.raises(ValueError, match="Unknown IMAGE_PROVIDER"):
+        get_image_generator()

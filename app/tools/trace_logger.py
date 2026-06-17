@@ -51,14 +51,27 @@ def append_trace(
     output_summary: str,
     metadata: dict[str, Any] | None = None,
     duration_ms: int = 0,
+    warnings: list[str] | None = None,
+    pipeline_step: str | None = None,
 ) -> AgentTrace:
     """Convenience helper to append a trace entry to a list."""
+    meta = dict(metadata or {})
+    if pipeline_step:
+        meta.setdefault("pipeline_step", pipeline_step)
+    # Never leak secrets into traces
+    for key in list(meta.keys()):
+        if any(s in key.lower() for s in ("api_key", "secret", "password", "token")):
+            meta[key] = "[REDACTED]"
+        elif isinstance(meta[key], str) and (meta[key].startswith("sk-") or "Bearer " in meta[key]):
+            meta[key] = "[REDACTED]"
+
     entry = AgentTrace(
         step=step,
         agent_name=agent_name,
         input_summary=input_summary,
         output_summary=output_summary,
-        metadata=metadata or {},
+        metadata=meta,
+        warnings=warnings or [],
         timestamp=utc_now_iso(),
         duration_ms=duration_ms,
     )

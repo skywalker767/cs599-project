@@ -64,7 +64,10 @@ class PromptAgent:
         llm_prompt, llm_meta = self._try_llm(vs, domain, state.task_type, document_context)
         if llm_prompt:
             # If we are generating PNG, always use the LLM-produced image prompt.
-            if state.task_type == "academic_figure" and (vs.output_format or "").lower().strip() == "png":
+            if (
+                state.task_type == "academic_figure"
+                and (vs.output_format or "").lower().strip() == "png"
+            ):
                 prompt = llm_prompt
             else:
                 if state.task_type == "academic_figure" and "mermaid" not in llm_prompt.lower():
@@ -81,10 +84,13 @@ class PromptAgent:
             input_summary=vs.title,
             output_summary=prompt[:100] + "...",
             metadata={"prompt_length": len(prompt), "task_type": state.task_type, **llm_meta},
+            pipeline_step="prompt_created",
         )
         return state
 
-    def _try_llm(self, vs, domain: dict, task_type: str, document_context: str = "") -> tuple[str | None, dict]:
+    def _try_llm(
+        self, vs, domain: dict, task_type: str, document_context: str = ""
+    ) -> tuple[str | None, dict]:
         actual = self.llm.provider_name
         fallback = False
         try:
@@ -99,7 +105,10 @@ class PromptAgent:
             parsed = parse_json_from_text(raw)
             if parsed and parsed.get("prompt"):
                 return str(parsed["prompt"]), llm_trace_meta(
-                    self.requested_provider, actual, fallback, True,
+                    self.requested_provider,
+                    actual,
+                    fallback,
+                    True,
                 )
             if raw and not parsed and len(raw) > 30:
                 return raw.strip(), llm_trace_meta(self.requested_provider, actual, fallback, True)
@@ -121,7 +130,7 @@ class PromptAgent:
             discount = domain.get("discount_display", "")
             domain_extra = (
                 f"e-commerce promotional banner, hero product photography in the center-right, "
-                f"eye-catching gradient background, prominent call-to-action button labeled \"{cta}\""
+                f'eye-catching gradient background, prominent call-to-action button labeled "{cta}"'
                 + (f', price tag showing "{discount}"' if discount else "")
                 + ", bold promotional typography, marketing layout optimized for mobile feeds"
             )
@@ -166,7 +175,7 @@ class PromptAgent:
             f"Subject: {vs.main_subject}",
             f"Scene: {vs.scenario}",
             f"Style: {vs.style}",
-            f"Composition: top-to-bottom flowchart with labeled modules",
+            "Composition: top-to-bottom flowchart with labeled modules",
             f"Aspect ratio: {vs.aspect_ratio}",
             f"Constraints: {'; '.join(vs.constraints[:3])}",
             f"Avoid: {', '.join(vs.avoid)}",

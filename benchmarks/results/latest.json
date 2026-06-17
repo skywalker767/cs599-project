@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-06-17T13:44:04.577925+00:00",
+  "mode": "openai",
+  "total_cases": 1,
+  "passed_cases": 1,
+  "pass_rate": 1.0,
+  "routing_accuracy": 1.0,
+  "spec_compliance_avg": 1.0,
+  "evaluator_avg_score": 63.0,
+  "generation_success_rate": 1.0,
+  "per_task_type_score": {
+    "ecommerce_banner": 63.0
+  },
+  "results": [
+    {
+      "id": "ecommerce_case",
+      "input_preview": "为一款夏季新品『0蔗糖低卡冰咖啡』制作一张小红书首页推广主图（banner）。商品是一罐铝罐装冰美式，核心卖点是『0蔗糖、低卡、冰爽不腻』。画面需要：突出商品主",
+      "expected_task_type": "ecommerce_banner",
+      "actual_task_type": "ecommerce_banner",
+      "routing_correct": true,
+      "expected_aspect_ratio": "1:1",
+      "spec_compliance": 1.0,
+      "visual_spec_completeness": 1.0,
+      "offline_evaluator_score": 63,
+      "vlm_evaluator_score": null,
+      "overall_score": 63,
+      "evaluator_layers": [
+        "deterministic",
+        "heuristic"
+      ],
+      "output_exists": true,
+      "generation_success": true,
+      "trace_steps": 10,
+      "pipeline_steps": [
+        "router_decision",
+        "clarification_needed",
+        "visual_spec_created",
+        "prompt_created",
+        "provider_selected",
+        "output_generated",
+        "evaluation_completed"
+      ],
+      "passed": true,
+      "key_requirements": []
+    }
+  ],
+  "summary": {
+    "avg_overall_score": 63.0,
+    "avg_offline_score": 63.0,
+    "avg_visual_spec_completeness": 1.0,
+    "avg_trace_steps": 10.0
+  }
+}

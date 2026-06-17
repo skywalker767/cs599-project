@@ -45,7 +45,9 @@ class RevisionAgent:
                 step="revise_if_needed",
                 input_summary="revision skipped",
                 output_summary="enable_revision=false or already revised",
-                metadata=llm_trace_meta(self.requested_provider, self.llm.provider_name, False, False),
+                metadata=llm_trace_meta(
+                    self.requested_provider, self.llm.provider_name, False, False
+                ),
             )
             return state
 
@@ -56,7 +58,9 @@ class RevisionAgent:
                 step="revise_if_needed",
                 input_summary=f"score={state.evaluation.overall_score}",
                 output_summary="score meets threshold, no revision",
-                metadata=llm_trace_meta(self.requested_provider, self.llm.provider_name, False, False),
+                metadata=llm_trace_meta(
+                    self.requested_provider, self.llm.provider_name, False, False
+                ),
             )
             return state
 
@@ -79,7 +83,10 @@ class RevisionAgent:
         if llm_result:
             return llm_result, llm_meta
         return self._revise_with_rules(state), llm_trace_meta(
-            self.requested_provider, self.llm.provider_name, False, False,
+            self.requested_provider,
+            self.llm.provider_name,
+            False,
+            False,
         )
 
     def _try_llm(self, state: WorkflowState) -> tuple[str | None, dict]:
@@ -96,7 +103,10 @@ class RevisionAgent:
             parsed = parse_json_from_text(raw)
             if parsed and parsed.get("revised_prompt"):
                 return str(parsed["revised_prompt"]), llm_trace_meta(
-                    self.requested_provider, actual, fallback, True,
+                    self.requested_provider,
+                    actual,
+                    fallback,
+                    True,
                 )
             return None, llm_trace_meta(self.requested_provider, actual, True, False)
         except Exception:

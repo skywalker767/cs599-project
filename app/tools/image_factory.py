@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Protocol
 
 from app.config import get_settings
-from app.tools.image_generator import ImageProviderError, OpenAIImageGenerator
+from app.tools.image_generator import OpenAIImageGenerator
 from app.tools.mock_image_generator import MockImageGenerator
 
 
@@ -24,9 +24,9 @@ class ImageGenerator(Protocol):
 
 
 def get_image_generator() -> ImageGenerator:
-    """Return configured image generator (openai or mock)."""
+    """Return configured image generator (openai or mock). Defaults to mock."""
     settings = get_settings()
-    provider = (settings.image_provider or "openai").lower().strip()
+    provider = (settings.image_provider or "mock").lower().strip()
 
     if settings.demo_mode:
         return MockImageGenerator()
@@ -36,6 +36,4 @@ def get_image_generator() -> ImageGenerator:
     if provider == "openai":
         return OpenAIImageGenerator()
 
-    raise ImageProviderError(
-        f"Unknown IMAGE_PROVIDER='{provider}'. Supported: openai, mock"
-    )
+    raise ValueError(f"Unknown IMAGE_PROVIDER='{provider}'. Supported: openai, mock")

@@ -48,8 +48,7 @@ def sanitize_selection(
     cleaned: list[str] = []
     for val in selected:
         if any(
-            val in incompat.get(prev, set()) or prev in incompat.get(val, set())
-            for prev in cleaned
+            val in incompat.get(prev, set()) or prev in incompat.get(val, set()) for prev in cleaned
         ):
             continue
         cleaned.append(val)

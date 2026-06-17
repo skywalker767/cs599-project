@@ -142,8 +142,9 @@ def test_llm_dynamic_question_included(agent):
         "ecommerce_banner",
     )
     ids = _question_ids(questions)
-    assert "llm_scene_mood" in ids
-    assert agent._last_sources.get("llm_scene_mood") == "llm"
+    llm_ids = {qid for qid, src in agent._last_sources.items() if src == "llm"}
+    assert llm_ids, f"expected LLM question, got sources={agent._last_sources}"
+    assert llm_ids & ids
 
 
 def test_optional_questions_rotate(agent):

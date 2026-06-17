@@ -152,7 +152,7 @@ def _render_one_question(
             f'margin:0 0 0.35rem 0;line-height:1.45;">{q["question_text"]}</p>'
             f'<p class="vf-q-reason" style="color:#334155;font-size:0.88rem;'
             f'margin:0 0 0.5rem 0;line-height:1.5;">{q.get("reason", "")}</p>'
-            '</div>',
+            "</div>",
             unsafe_allow_html=True,
         )
 
@@ -228,15 +228,13 @@ def render_clarification_carousel(
 
     # Progress bar
     answered = sum(
-        1
-        for q in questions
-        if selections.get(q["question_id"]) or q.get("default_value")
+        1 for q in questions if selections.get(q["question_id"]) or q.get("default_value")
     )
     st.progress(answered / total, text=f"共 {total} 道偏好题 · 已填写 {answered}/{total}")
 
     # Render 2 questions per row for parallel browsing
     for row_start in range(0, total, 2):
-        row_qs = questions[row_start: row_start + 2]
+        row_qs = questions[row_start : row_start + 2]
         if len(row_qs) == 1:
             # Odd question: full width
             _render_one_question(row_qs[0], row_start, selections)
@@ -252,19 +250,36 @@ def render_clarification_carousel(
 
 
 def render_evaluation_compact(eval_data: dict) -> None:
-    """Compact evaluation display for side panels."""
+    """Compact evaluation display with layered score breakdown."""
     if not eval_data:
         return
 
     overall = eval_data.get("overall_score", 0)
+    offline = eval_data.get("offline_score", overall)
+    vlm = eval_data.get("vlm_score")
     pct = min(overall, 100)
     st.markdown(
         f'<div style="text-align:center;margin:0.5rem 0">'
         f'<div class="vf-score-ring" style="--pct:{pct}%">{overall}</div>'
-        f'<p style="margin:0.5rem 0 0;font-weight:600;color:#334155">综合评分 / 100</p></div>',
+        f'<p style="margin:0.5rem 0 0;font-weight:600;color:#334155">综合评分 / 100</p>'
+        f'<p style="margin:0.25rem 0;font-size:0.85rem;color:#64748b">'
+        f"离线评估 {offline}" + (f" · VLM {vlm}" if vlm is not None else "") + "</p></div>",
         unsafe_allow_html=True,
     )
     st.progress(min(overall / 100.0, 1.0))
+
+    layers = eval_data.get("evaluator_layers", [])
+    if layers:
+        st.caption("评估层：" + " → ".join(layers))
+
+    breakdown = eval_data.get("score_breakdown") or {}
+    if breakdown:
+        with st.expander("📊 分项评分与理由", expanded=True):
+            for name, item in breakdown.items():
+                score = item.get("score", 0) if isinstance(item, dict) else 0
+                rationale = item.get("rationale", "") if isinstance(item, dict) else str(item)
+                st.markdown(f"**{name}** · {score}/100")
+                st.caption(rationale)
 
     metrics = [
         ("需求", "requirement_match_score"),
@@ -278,6 +293,12 @@ def render_evaluation_compact(eval_data: dict) -> None:
         for label, key in metrics
     )
     st.markdown(pills, unsafe_allow_html=True)
+
+    warnings = eval_data.get("warnings", [])
+    if warnings:
+        with st.expander(f"⚠️ 警告（{len(warnings)}）"):
+            for w in warnings:
+                st.warning(w)
 
     suggestions = eval_data.get("suggestions", [])
     if suggestions:
@@ -305,22 +326,36 @@ def render_trace_timeline(traces: list[dict]) -> None:
     c2.metric("总耗时", f"{total_ms} ms")
     c3.metric("均耗时", f"{total_ms // max(len(traces), 1)} ms")
 
+    pipeline = [
+        t.get("metadata", {}).get("pipeline_step")
+        for t in traces
+        if t.get("metadata", {}).get("pipeline_step")
+    ]
+    if pipeline:
+        st.caption("Pipeline: " + " → ".join(pipeline))
+
     df = pd.DataFrame(
         {"Agent": t.get("agent_name", ""), "ms": t.get("duration_ms", 0)} for t in traces
     )
     if not df.empty and df["ms"].sum() > 0:
         st.bar_chart(df.set_index("Agent"))
 
-    rows = [
-        {
+    rows = []
+    for i, t in enumerate(traces, 1):
+        row = {
             "#": i,
+            "Step": t.get("metadata", {}).get("pipeline_step") or t.get("step", ""),
             "Agent": t.get("agent_name", ""),
-            "耗时": t.get("duration_ms", 0),
+            "ms": t.get("duration_ms", 0),
             "输出": (t.get("output_summary") or "")[:40],
         }
-        for i, t in enumerate(traces, 1)
-    ]
+        rows.append(row)
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+    for t in traces:
+        warns = t.get("warnings") or []
+        if warns:
+            st.warning(f"{t.get('agent_name')}: " + "; ".join(warns))
 
 
 def clarification_impact_hints(answers: list[dict]) -> list[str]:

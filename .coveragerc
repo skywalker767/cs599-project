@@ -1,0 +1,11 @@
+[run]
+source = app
+omit =
+    app/ui/*
+    app/memory/*
+    */__init__.py
+
+[report]
+fail_under = 80
+show_missing = true
+skip_empty = true

@@ -50,17 +50,13 @@ class VisionFlowClient:
         try:
             resp = requests.request(method, self._url(path), timeout=timeout, **kwargs)
             resp.raise_for_status()
-            if resp.content and resp.headers.get("content-type", "").startswith(
-                "application/json"
-            ):
+            if resp.content and resp.headers.get("content-type", "").startswith("application/json"):
                 return resp.json()
             return resp.content
         except requests.Timeout as exc:
             raise APIError(f"请求超时（>{timeout}s），后端可能仍在处理。") from exc
         except requests.ConnectionError as exc:
-            raise APIError(
-                "无法连接后端 API。请先运行：uvicorn app.main:app --reload"
-            ) from exc
+            raise APIError("无法连接后端 API。请先运行：uvicorn app.main:app --reload") from exc
         except requests.HTTPError as exc:
             detail = _extract_detail(exc.response) if exc.response is not None else str(exc)
             code = exc.response.status_code if exc.response is not None else None
@@ -87,7 +83,9 @@ class VisionFlowClient:
         return self._url(f"/tasks/{task_id}/asset")
 
     # ── Write endpoints ───────────────────────────────────────────
-    def extract_document(self, filename: str, data: bytes, content_type: str = "application/pdf") -> dict:
+    def extract_document(
+        self, filename: str, data: bytes, content_type: str = "application/pdf"
+    ) -> dict:
         return self._request(
             "POST",
             "/extract",

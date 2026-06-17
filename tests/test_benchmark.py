@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from app.config import PROJECT_ROOT, get_settings
-from app.tools.benchmark import BENCHMARK_FILES, run_benchmark
+from app.tools.benchmark import BENCHMARK_JSONL, load_benchmark_cases, run_benchmark
 
 
 @pytest.fixture(autouse=True)
@@ -18,8 +18,11 @@ def clear_cache():
     get_settings.cache_clear()
 
 
-def test_benchmark_manifest_has_fifteen_cases():
-    assert len(BENCHMARK_FILES) == 15
+def test_benchmark_jsonl_has_twelve_cases():
+    cases = load_benchmark_cases()
+    assert len(cases) == 12
+    types = {c["expected_task_type"] for c in cases}
+    assert types == {"ecommerce_banner", "academic_figure", "ppt_visual"}
 
 
 def test_run_benchmark_subset_generates_report():
@@ -27,23 +30,21 @@ def test_run_benchmark_subset_generates_report():
 
     assert report["total_cases"] == 2
     assert len(report["results"]) == 2
-    assert "summary" in report
+    assert "routing_accuracy" in report
+    assert "spec_compliance_avg" in report
+    assert "evaluator_avg_score" in report
+    assert "generation_success_rate" in report
     assert report["report_path"]
-    assert report.get("markdown_report_path")
 
     report_path = Path(report["report_path"])
     assert report_path.exists()
-
-    md_path = Path(report["markdown_report_path"])
-    assert md_path.exists()
-    assert "# VisionFlow Benchmark Report" in md_path.read_text(encoding="utf-8")
+    assert report_path == PROJECT_ROOT / "benchmarks" / "results" / "latest.json"
 
     for row in report["results"]:
         assert "routing_correct" in row
-        assert "required_fields_ok" in row
-        assert "score_meets_threshold" in row
-        assert "passed" in row
-        assert row["output_exists"] is True
+        assert "spec_compliance" in row
+        assert "offline_evaluator_score" in row
+        assert row["generation_success"] is True
 
 
 def test_benchmark_offline_mock_mode(monkeypatch, tmp_path):
@@ -59,10 +60,25 @@ def test_benchmark_offline_mock_mode(monkeypatch, tmp_path):
     )
     assert report["mode"] == "mock"
     assert report["total_cases"] == 3
-    assert all(r["output_exists"] for r in report["results"])
+    assert all(r["generation_success"] for r in report["results"])
+
+
+def test_benchmark_full_jsonl_mock(monkeypatch, tmp_path):
+    monkeypatch.setenv("DEMO_MODE", "true")
+    monkeypatch.setenv("LLM_PROVIDER", "mock")
+    monkeypatch.setenv("IMAGE_PROVIDER", "mock")
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path / 'bench2.db'}")
+    get_settings.cache_clear()
+
+    report = run_benchmark(save=False)
+    assert report["total_cases"] == 12
+    assert report["routing_accuracy"] >= 0.5
+    assert BENCHMARK_JSONL.exists()
 
 
 def test_benchmark_report_default_path():
     report = run_benchmark(save=True, case_files=["ecommerce_case.json"])
-    expected = PROJECT_ROOT / "storage" / "reports" / "benchmark_report.json"
-    assert Path(report["report_path"]) == expected
+    latest = PROJECT_ROOT / "benchmarks" / "results" / "latest.json"
+    assert Path(report["report_path"]) == latest
+    data = json.loads(latest.read_text(encoding="utf-8"))
+    assert "per_task_type_score" in data
