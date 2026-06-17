@@ -1,0 +1,19 @@
+# Diagram Spec: 演示视觉标题
+Subject: 演示主体
+Scene: 演示场景
+Style: 清晰专业
+Composition: top-to-bottom flowchart with labeled modules
+Aspect ratio: 4:3
+Constraints: 箭头方向明确; 字号适合印刷; 模块对齐
+Avoid: 过度装饰, 低对比度文字, 模糊标签
+Caption: Figure 1: 演示视觉标题
+
+## Mermaid Flowchart
+```mermaid
+flowchart TD
+    N0["主体"]
+    N1["标题"]
+    N0 --> N1
+    N2["辅助图形"]
+    N1 --> N2
+```

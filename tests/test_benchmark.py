@@ -72,7 +72,10 @@ def test_benchmark_full_jsonl_mock(monkeypatch, tmp_path):
 
     report = run_benchmark(save=False)
     assert report["total_cases"] == 12
-    assert report["routing_accuracy"] >= 0.5
+    # Smoke suite: expect strong routing on curated JSONL (not a rigorous ML benchmark).
+    assert report["routing_accuracy"] >= 0.75, (
+        f"routing_accuracy {report['routing_accuracy']} below smoke threshold 0.75"
+    )
     assert BENCHMARK_JSONL.exists()
 
 

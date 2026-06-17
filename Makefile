@@ -45,6 +45,15 @@ benchmark:
 demo:
 	$(DEMO_ENV) $(PY) scripts/run_demo.py
 
+export-demo:
+	$(DEMO_ENV) $(PY) scripts/export_demo_cases.py
+
+validate:
+	$(PY) scripts/validate_repo_format.py
+
+benchmark-cli:
+	$(BENCH_ENV) $(PY) benchmark.py --benchmark
+
 readme-examples:
 	$(PY) scripts/generate_readme_examples.py
 

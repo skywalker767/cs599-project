@@ -1,0 +1,19 @@
+{
+  "task_id": "6473f801",
+  "task_type": "ecommerce_banner",
+  "route_reason": "method=llm | confidence=0.75 | task_type=ecommerce_banner | signals=主图, banner, 商品, 促销",
+  "asset_file": "asset.png",
+  "output_path_original": "E:\\VisionFlow\\cs599-project\\storage\\generated\\6473f801_ecommerce_banner.png",
+  "overall_score": 41,
+  "offline_score": 41,
+  "provider_mode": "mock",
+  "pipeline_steps": [
+    "router_decision",
+    "clarification_needed",
+    "visual_spec_created",
+    "prompt_created",
+    "provider_selected",
+    "output_generated",
+    "evaluation_completed"
+  ]
+}

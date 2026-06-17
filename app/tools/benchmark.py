@@ -1,4 +1,9 @@
-"""Benchmark runner for Spec2Vision – reads benchmarks/examples.jsonl."""
+"""Benchmark runner for Spec2Vision – reads benchmarks/examples.jsonl.
+
+This is a **smoke / regression suite**, not a rigorous ML benchmark.
+Metrics (routing accuracy, offline evaluator score) depend on heuristic
+rules and mock placeholder images; interpret results accordingly.
+"""
 
 from __future__ import annotations
 

@@ -1,0 +1,79 @@
+{
+  "task_type": "ppt_visual",
+  "title": "演示视觉标题",
+  "scenario": "演示场景",
+  "target_audience": "课程师生与答辩评委",
+  "purpose": "传达核心信息",
+  "style": "清晰专业",
+  "aspect_ratio": "16:9",
+  "main_subject": "演示主体",
+  "key_elements": [
+    "主体",
+    "标题",
+    "辅助图形"
+  ],
+  "text_requirements": [
+    "标题醒目",
+    "副标题补充",
+    "日期/机构可选"
+  ],
+  "constraints": [
+    "16:9宽屏适配",
+    "标题可读性",
+    "背景不干扰文字",
+    "reserve blank space on the left side for slide title",
+    "保留充足留白",
+    "标题区域不被图形遮挡"
+  ],
+  "avoid": [
+    "信息过载",
+    "低对比标题",
+    "杂乱背景"
+  ],
+  "output_format": "png",
+  "evaluation_dimensions": [
+    "专业感",
+    "简洁度",
+    "标题可读性",
+    "汇报适配"
+  ],
+  "product_poster": null,
+  "educational": {
+    "topic": "演示主体",
+    "learning_goal": "演示",
+    "key_concepts": [
+      "主体",
+      "标题",
+      "辅助图形"
+    ],
+    "hierarchy": "layered",
+    "audience": "课程师生与答辩评委",
+    "visual_metaphor": "icons-and-labels",
+    "accessibility_notes": [
+      "高对比文字",
+      "清晰层级"
+    ]
+  },
+  "academic": null,
+  "field_provenance": {
+    "title": "inferred",
+    "key_element:主标题": "default",
+    "key_element:副标题": "default",
+    "key_element:抽象图形": "default",
+    "key_element:品牌区域": "default",
+    "key_element:为《人工智能驱动的软件开发》课程结课汇报制作一张": "user_input",
+    "key_element:PPT": "user_input",
+    "key_element:封面配图（演示文稿首页": "user_input",
+    "style": "inferred",
+    "purpose": "inferred",
+    "scenario": "inferred",
+    "output_format": "default",
+    "aspect_ratio": "user_input",
+    "target_audience": "user_input",
+    "key_element:主体": "inferred",
+    "key_element:标题": "inferred",
+    "key_element:辅助图形": "inferred",
+    "educational.topic": "user_input",
+    "main_subject": "user_input"
+  }
+}

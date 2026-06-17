@@ -1,0 +1,11 @@
+{
+  "user_input": "为一篇机器学习论文绘制方法流程图（method pipeline / architecture diagram）。整个方法分为五个阶段：① 数据预处理（缺失值清洗、归一化、数据增强）；② 特征提取（提取时域与频域特征）；③ 双分支神经网络（CNN 分支提取局部特征，Transformer 分支建模全局依赖，两分支并行）；④ 特征融合模块（拼接 + 注意力加权）；⑤ 分类输出与损失计算（Softmax 输出类别概率，交叉熵损失）。要求学术简洁风格：模块使用圆角矩形框，阶段之间用带箭头的连线表示数据流方向，关键张量维度可标注在连线旁，整体符合期刊论文与学术汇报的排版规范，输出为矢量图便于在论文中无损缩放。",
+  "task_type": "academic_figure",
+  "style_preference": "学术简洁、期刊论文风、蓝灰配色",
+  "target_audience": "机器学习方向的研究人员与审稿人",
+  "aspect_ratio": "4:3",
+  "enable_revision": false,
+  "clarification_answers": [],
+  "skip_clarification": true,
+  "document_context": null
+}

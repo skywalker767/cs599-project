@@ -1,0 +1,779 @@
+[
+  {
+    "step": "route_task",
+    "agent_name": "TaskRouterAgent",
+    "input_summary": "为《人工智能驱动的软件开发》课程结课汇报制作一张 PPT 封面配图（演示文稿首页 / slide cover）。画面走专业科技感风格：深色科技蓝渐变背景，融入抽象的神经网络节点、流动的代码字符与电路板纹理等元素；左侧预留竖向标题区，用于放置",
+    "output_summary": "type=ppt_visual, confidence=0.75, method=llm",
+    "metadata": {
+      "task_type": "ppt_visual",
+      "route_reason": "method=llm | confidence=0.75 | task_type=ppt_visual | signals=学术, 课程, 汇报, ppt",
+      "route_result": {
+        "task_type": "ppt_visual",
+        "confidence": 0.75,
+        "reasoning": "LLM 分类：mock llm routing",
+        "matched_signals": [
+          "学术",
+          "课程",
+          "汇报",
+          "ppt",
+          "封面",
+          "演示",
+          "slide"
+        ],
+        "evidence": [
+          "academic_figure:论文|方法|模型|流程图|实验|学术|算法|架构图|图注×1",
+          "ppt_visual:ppt|汇报|报告|封面|演示|教学|教育|信息图|课程×9",
+          "ppt_visual:presentation|slide|keynote|infographic|learning|lesson×1",
+          "llm:mock llm routing"
+        ],
+        "clarification_required": false,
+        "clarification_question": null,
+        "llm_used": true,
+        "fallback_reason": null,
+        "method": "llm"
+      },
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": false,
+      "llm_parse_ok": true,
+      "pipeline_step": "router_decision"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.802582+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "generate_clarification",
+    "agent_name": "ClarificationAgent",
+    "input_summary": "为《人工智能驱动的软件开发》课程结课汇报制作一张 PPT 封面配图（演示文稿首页 / slide cover）。画面走专业科技感风格：深色科技蓝渐变背景，融入抽象的神经网络节点、流动的代码字符与电路板",
+    "output_summary": "questions=5, resolved=5, llm=mock",
+    "metadata": {
+      "questions": [
+        {
+          "question_id": "slide_position",
+          "question_text": "请选择图片使用位置",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "封面",
+              "value": "cover",
+              "description": null,
+              "incompatible_with": [
+                "section",
+                "content",
+                "ending"
+              ]
+            },
+            {
+              "label": "章节页",
+              "value": "section",
+              "description": null,
+              "incompatible_with": [
+                "cover",
+                "content",
+                "ending"
+              ]
+            },
+            {
+              "label": "内容页",
+              "value": "content",
+              "description": null,
+              "incompatible_with": [
+                "cover",
+                "section",
+                "ending"
+              ]
+            },
+            {
+              "label": "结尾页",
+              "value": "ending",
+              "description": null,
+              "incompatible_with": [
+                "cover",
+                "section",
+                "content"
+              ]
+            }
+          ],
+          "default_value": "cover",
+          "reason": "幻灯片位置决定标题区、留白和构图策略。"
+        },
+        {
+          "question_id": "layout_blank",
+          "question_text": "请选择留白位置",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "左侧留白",
+              "value": "left",
+              "description": null,
+              "incompatible_with": [
+                "right",
+                "center",
+                "none"
+              ]
+            },
+            {
+              "label": "右侧留白",
+              "value": "right",
+              "description": null,
+              "incompatible_with": [
+                "left",
+                "center",
+                "none"
+              ]
+            },
+            {
+              "label": "中间留白",
+              "value": "center",
+              "description": null,
+              "incompatible_with": [
+                "left",
+                "right",
+                "none"
+              ]
+            },
+            {
+              "label": "不需要留白",
+              "value": "none",
+              "description": null,
+              "incompatible_with": [
+                "left",
+                "right",
+                "center"
+              ]
+            }
+          ],
+          "default_value": "left",
+          "reason": "留白位置需与标题和正文区域对齐，避免遮挡文字。"
+        },
+        {
+          "question_id": "visual_focus",
+          "question_text": "请选择画面重心（可多选）",
+          "question_type": "multi_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "抽象概念",
+              "value": "abstract_concept",
+              "description": null,
+              "incompatible_with": [
+                "future_city"
+              ]
+            },
+            {
+              "label": "人物协作",
+              "value": "people_collaboration",
+              "description": null,
+              "incompatible_with": []
+            },
+            {
+              "label": "技术系统",
+              "value": "technical_system",
+              "description": null,
+              "incompatible_with": []
+            },
+            {
+              "label": "数据增长",
+              "value": "data_growth",
+              "description": null,
+              "incompatible_with": []
+            },
+            {
+              "label": "未来城市",
+              "value": "future_city",
+              "description": null,
+              "incompatible_with": [
+                "abstract_concept"
+              ]
+            }
+          ],
+          "default_value": "technical_system",
+          "reason": "画面重心决定主视觉元素；可选择多个元素组合呈现。"
+        },
+        {
+          "question_id": "aspect_ratio",
+          "question_text": "请选择图片比例",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "方图 1:1",
+              "value": "1:1",
+              "description": null,
+              "incompatible_with": [
+                "4:5",
+                "16:9",
+                "3:4",
+                "A4"
+              ]
+            },
+            {
+              "label": "小红书/电商竖图 4:5",
+              "value": "4:5",
+              "description": null,
+              "incompatible_with": [
+                "1:1",
+                "16:9",
+                "3:4",
+                "A4"
+              ]
+            },
+            {
+              "label": "PPT/横版 16:9",
+              "value": "16:9",
+              "description": null,
+              "incompatible_with": [
+                "1:1",
+                "4:5",
+                "3:4",
+                "A4"
+              ]
+            },
+            {
+              "label": "竖版海报 3:4",
+              "value": "3:4",
+              "description": null,
+              "incompatible_with": [
+                "1:1",
+                "4:5",
+                "16:9",
+                "A4"
+              ]
+            },
+            {
+              "label": "报告页面 A4",
+              "value": "A4",
+              "description": null,
+              "incompatible_with": [
+                "1:1",
+                "4:5",
+                "16:9",
+                "3:4"
+              ]
+            }
+          ],
+          "default_value": "16:9",
+          "reason": "比例影响构图与平台适配，不同任务对尺寸要求差异较大。"
+        },
+        {
+          "question_id": "color_mood",
+          "question_text": "请选择色彩情绪",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "冷静专业蓝",
+              "value": "professional_blue",
+              "description": null,
+              "incompatible_with": [
+                "energetic_orange",
+                "eco_green",
+                "luxury_dark",
+                "soft_light"
+              ]
+            },
+            {
+              "label": "活力创新橙",
+              "value": "energetic_orange",
+              "description": null,
+              "incompatible_with": [
+                "professional_blue",
+                "eco_green",
+                "luxury_dark",
+                "soft_light"
+              ]
+            },
+            {
+              "label": "自然生态绿",
+              "value": "eco_green",
+              "description": null,
+              "incompatible_with": [
+                "professional_blue",
+                "energetic_orange",
+                "luxury_dark",
+                "soft_light"
+              ]
+            },
+            {
+              "label": "高端黑金",
+              "value": "luxury_dark",
+              "description": null,
+              "incompatible_with": [
+                "professional_blue",
+                "energetic_orange",
+                "eco_green",
+                "soft_light"
+              ]
+            },
+            {
+              "label": "柔和浅色系",
+              "value": "soft_light",
+              "description": null,
+              "incompatible_with": [
+                "professional_blue",
+                "energetic_orange",
+                "eco_green",
+                "luxury_dark"
+              ]
+            }
+          ],
+          "default_value": "professional_blue",
+          "reason": "色彩情绪决定汇报第一印象。"
+        }
+      ],
+      "question_sources": {
+        "slide_position": "core",
+        "layout_blank": "core",
+        "visual_focus": "core",
+        "aspect_ratio": "core",
+        "color_mood": "optional"
+      },
+      "defaults": {
+        "slide_position": "cover",
+        "layout_blank": "left",
+        "visual_focus": "technical_system",
+        "aspect_ratio": "16:9",
+        "color_mood": "professional_blue"
+      },
+      "resolved_answers": {
+        "slide_position": "cover",
+        "layout_blank": "left",
+        "visual_focus": "technical_system",
+        "aspect_ratio": "16:9",
+        "color_mood": "professional_blue"
+      },
+      "user_selected": [],
+      "clarification_needed": false,
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": false,
+      "llm_parse_ok": false,
+      "llm_question_count": 0,
+      "pipeline_step": "clarification_needed"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.803702+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "parse_requirement",
+    "agent_name": "RequirementAgent",
+    "input_summary": "为《人工智能驱动的软件开发》课程结课汇报制作一张 PPT 封面配图（演示文稿首页 / slide cover）。画面走专业科技感风格：深色科技蓝渐变背景，融入抽象的神经网络节点、流动的代码字符与电路板纹理等元素；左侧预留竖向标题区，用于放置",
+    "output_summary": "subject=演示主体, style=简洁",
+    "metadata": {
+      "purpose": "演示",
+      "main_subject": "演示主体",
+      "style": "简洁",
+      "target_audience": "课程师生与答辩评委",
+      "aspect_ratio": "16:9",
+      "user_input": "为《人工智能驱动的软件开发》课程结课汇报制作一张 PPT 封面配图（演示文稿首页 / slide cover）。画面走专业科技感风格：深色科技蓝渐变背景，融入抽象的神经网络节点、流动的代码字符与电路板纹理等元素；左侧预留竖向标题区，用于放置主标题『人工智能驱动的软件开发』与副标题『从 Copilot 到多智能体协作』；右下角预留品牌/校徽区域。整体用于课程演示与学术汇报，需保证在投影仪与大屏演示时画面清晰、层次分明、具备视觉冲击力。",
+      "clarification": {
+        "slide_position": "cover",
+        "layout_blank": "left",
+        "visual_focus": "technical_system",
+        "aspect_ratio": "16:9",
+        "color_mood": "professional_blue"
+      },
+      "slide_position": "cover",
+      "layout_blank": "left",
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": false,
+      "llm_parse_ok": true
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.804560+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "build_visual_spec",
+    "agent_name": "VisualSpecAgent",
+    "input_summary": "{'purpose': '演示', 'main_subject': '演示主体', 'style': '简洁', 'target_audience': '课程师生与答辩评委', 'aspect_ratio': '16:9', 'user_i",
+    "output_summary": "title=演示视觉标题, elements=3",
+    "metadata": {
+      "task_type": "ppt_visual",
+      "title": "演示视觉标题",
+      "scenario": "演示场景",
+      "target_audience": "课程师生与答辩评委",
+      "purpose": "传达核心信息",
+      "style": "清晰专业",
+      "aspect_ratio": "16:9",
+      "main_subject": "演示主体",
+      "key_elements": [
+        "主体",
+        "标题",
+        "辅助图形"
+      ],
+      "text_requirements": [
+        "标题醒目",
+        "副标题补充",
+        "日期/机构可选"
+      ],
+      "constraints": [
+        "16:9宽屏适配",
+        "标题可读性",
+        "背景不干扰文字",
+        "reserve blank space on the left side for slide title"
+      ],
+      "avoid": [
+        "信息过载",
+        "低对比标题",
+        "杂乱背景"
+      ],
+      "output_format": "png",
+      "evaluation_dimensions": [
+        "专业感",
+        "简洁度",
+        "标题可读性",
+        "汇报适配"
+      ],
+      "product_poster": null,
+      "educational": {
+        "topic": "演示主体",
+        "learning_goal": "演示",
+        "key_concepts": [
+          "主体",
+          "标题",
+          "辅助图形"
+        ],
+        "hierarchy": "layered",
+        "audience": "课程师生与答辩评委",
+        "visual_metaphor": "icons-and-labels",
+        "accessibility_notes": [
+          "高对比文字",
+          "清晰层级"
+        ]
+      },
+      "academic": null,
+      "field_provenance": {
+        "title": "inferred",
+        "key_element:主标题": "default",
+        "key_element:副标题": "default",
+        "key_element:抽象图形": "default",
+        "key_element:品牌区域": "default",
+        "key_element:为《人工智能驱动的软件开发》课程结课汇报制作一张": "user_input",
+        "key_element:PPT": "user_input",
+        "key_element:封面配图（演示文稿首页": "user_input",
+        "style": "inferred",
+        "purpose": "inferred",
+        "scenario": "inferred",
+        "output_format": "default",
+        "aspect_ratio": "user_input",
+        "target_audience": "user_input",
+        "key_element:主体": "inferred",
+        "key_element:标题": "inferred",
+        "key_element:辅助图形": "inferred",
+        "educational.topic": "user_input",
+        "main_subject": "user_input"
+      },
+      "clarification_applied": {
+        "slide_position": "cover",
+        "layout_blank": "left",
+        "visual_focus": "technical_system",
+        "aspect_ratio": "16:9",
+        "color_mood": "professional_blue"
+      },
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": false,
+      "llm_parse_ok": true,
+      "pipeline_step": "visual_spec_created"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.805535+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "enrich_domain_spec",
+    "agent_name": "PPTVisualAgent",
+    "input_summary": "ppt_visual",
+    "output_summary": "cover_composition applied",
+    "metadata": {
+      "cover_composition": "标题居左或居中，右侧/背景放抽象图形",
+      "presentation_style": "专业商务或学术科技风",
+      "whitespace_zones": [
+        "标题区上方留白",
+        "底部品牌/日期区",
+        "左右安全边距"
+      ],
+      "title_readability": [
+        "标题字号不小于 36pt",
+        "标题与背景对比度 ≥ 4.5:1",
+        "副标题弱化处理"
+      ],
+      "background_motif": "几何渐变或低饱和度抽象图形"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.806475+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "build_prompt",
+    "agent_name": "PromptAgent",
+    "input_summary": "演示视觉标题",
+    "output_summary": "演示主体, set in 演示场景. The composition features the following elements arranged from left to right: 主体, ...",
+    "metadata": {
+      "prompt_length": 754,
+      "task_type": "ppt_visual",
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": true,
+      "llm_parse_ok": false,
+      "pipeline_step": "prompt_created"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.807411+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "select_provider",
+    "agent_name": "AssetManagerAgent",
+    "input_summary": "mock",
+    "output_summary": "provider=mock, mode=mock",
+    "metadata": {
+      "provider": "mock",
+      "image_provider": "mock",
+      "generation_mode": "mock",
+      "pipeline_step": "provider_selected"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.808196+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "generate_asset",
+    "agent_name": "AssetManagerAgent",
+    "input_summary": "ppt_visual",
+    "output_summary": "842c4704_ppt_visual.png",
+    "metadata": {
+      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\generated\\842c4704_ppt_visual.png",
+      "provider": "mock",
+      "image_provider": "mock",
+      "generation_mode": "mock",
+      "task_type": "ppt_visual",
+      "requested_aspect_ratio": "16:9",
+      "resolved_width": 1792,
+      "resolved_height": 1024,
+      "aspect_ratio_requested": "16:9",
+      "aspect_ratio_normalized": "1792x1024",
+      "width": 1792,
+      "height": 1024,
+      "orientation": "landscape",
+      "size_normalized": true,
+      "normalization_reason": "ideal 1536x864 snapped to API size 1792x1024 (provider supports dict_keys(['1024x1024', '1792x1024', '1024x1792', '1536x1024', '1024x1536']))",
+      "pipeline_step": "output_generated"
+    },
+    "warnings": [
+      "ideal 1536x864 snapped to API size 1792x1024 (provider supports dict_keys(['1024x1024', '1792x1024', '1024x1792', '1536x1024', '1024x1536']))"
+    ],
+    "timestamp": "2026-06-17T14:36:23.825229+00:00",
+    "duration_ms": 17
+  },
+  {
+    "step": "evaluate_asset",
+    "agent_name": "CriticAgent",
+    "input_summary": "E:\\VisionFlow\\cs599-project\\storage\\generated\\842c4704_ppt_visual.png",
+    "output_summary": "overall=56, offline=56",
+    "metadata": {
+      "requirement_match_score": 95,
+      "domain_compliance_score": 84,
+      "visual_quality_score": 30,
+      "prompt_completeness_score": 81,
+      "traceability_score": 74,
+      "risk_count": 0,
+      "overall_score": 56,
+      "offline_score": 56,
+      "vlm_score": null,
+      "evaluator_layers": [
+        "deterministic",
+        "heuristic"
+      ],
+      "score_breakdown": {
+        "format_validity": {
+          "score": 30,
+          "rationale": "PNG 疑似纯色/空白图（亮度跨度 0）。"
+        },
+        "spec_compliance": {
+          "score": 95,
+          "rationale": "Visual Spec 必填字段覆盖 7/7；输出尺寸 1792x1024 符合规格 1792x1024。"
+        },
+        "semantic_alignment": {
+          "score": 95,
+          "rationale": "prompt 包含 main_subject；key_elements 命中 3/3。"
+        },
+        "reproducibility_score": {
+          "score": 74,
+          "rationale": "trace 步骤数 8；核心 Agent 覆盖 3/4。"
+        },
+        "task_specific_score": {
+          "score": 84,
+          "rationale": "领域关键词命中 3/7；含教学主题字段。"
+        },
+        "layout_quality": {
+          "score": 0,
+          "rationale": "尺寸 1792x1024；edge_density=0.001；边缘密度极低，布局可能过于单调；疑似空白/纯色图。"
+        },
+        "aesthetics": {
+          "score": 15,
+          "rationale": "entropy=-0.0；variance=0.0；contrast=0.0；极低信息量，美学分大幅降低。"
+        }
+      },
+      "rubric": {
+        "visual_validity": {
+          "score": 30,
+          "rationale": "PNG 疑似纯色/空白图（亮度跨度 0）。",
+          "evidence": [
+            "file=842c4704_ppt_visual.png",
+            "suffix=png",
+            "扩展名与 output_format=png 一致",
+            "size=7771B",
+            "文件大小在合理范围内"
+          ],
+          "deductions": []
+        },
+        "spec_completeness": {
+          "score": 100,
+          "rationale": "Visual Spec 关键字段覆盖 7/7。",
+          "evidence": [
+            "present:canvas(aspect_ratio)",
+            "present:layout(scenario/style)",
+            "present:objects(key_elements/main_subject)",
+            "present:style",
+            "present:constraints",
+            "present:title",
+            "present:purpose"
+          ],
+          "deductions": []
+        },
+        "requirement_alignment": {
+          "score": 95,
+          "rationale": "需求对齐基于 prompt 与 Visual Spec 主体/要素的字面覆盖（启发式）。",
+          "evidence": [
+            "prompt 含 main_subject",
+            "key_elements 命中: 主体, 标题, 辅助图形"
+          ],
+          "deductions": []
+        },
+        "domain_fit": {
+          "score": 100,
+          "rationale": "ppt_visual 领域 rubric 覆盖 5/5。",
+          "evidence": [
+            "covered:slide_title",
+            "covered:layout",
+            "covered:hierarchy",
+            "covered:supporting_elements",
+            "covered:presentation_readability"
+          ],
+          "deductions": []
+        },
+        "traceability": {
+          "score": 83,
+          "rationale": "流水线阶段覆盖 5/6（input→route→clarification→spec→prompt→generation→evaluation）。",
+          "evidence": [
+            "stage:router_decision",
+            "stage:clarification_needed",
+            "stage:visual_spec_created",
+            "stage:prompt_created",
+            "stage:output_generated"
+          ],
+          "deductions": [
+            "missing_stage:evaluation_completed"
+          ]
+        },
+        "reproducibility": {
+          "score": 100,
+          "rationale": "可复现性依据：provider 记录、确定性生成模式、配置快照。",
+          "evidence": [
+            "provider=mock",
+            "generation_mode=mock",
+            "mock/svg provider 输出确定性",
+            "config:image_provider=mock",
+            "config:llm_provider=mock"
+          ],
+          "deductions": []
+        }
+      },
+      "evidence": [
+        "file=842c4704_ppt_visual.png",
+        "suffix=png",
+        "扩展名与 output_format=png 一致",
+        "size=7771B",
+        "文件大小在合理范围内",
+        "present:canvas(aspect_ratio)",
+        "present:layout(scenario/style)",
+        "present:objects(key_elements/main_subject)",
+        "present:style",
+        "present:constraints",
+        "present:title",
+        "present:purpose",
+        "prompt 含 main_subject",
+        "key_elements 命中: 主体, 标题, 辅助图形",
+        "covered:slide_title",
+        "covered:layout",
+        "covered:hierarchy",
+        "covered:supporting_elements",
+        "covered:presentation_readability",
+        "stage:router_decision",
+        "stage:clarification_needed",
+        "stage:visual_spec_created",
+        "stage:prompt_created",
+        "stage:output_generated",
+        "provider=mock",
+        "generation_mode=mock",
+        "mock/svg provider 输出确定性",
+        "config:image_provider=mock",
+        "config:llm_provider=mock"
+      ],
+      "comments": [
+        "format_validity: 30/100 — PNG 疑似纯色/空白图（亮度跨度 0）。",
+        "spec_compliance: 95/100 — Visual Spec 必填字段覆盖 7/7；输出尺寸 1792x1024 符合规格 1792x1024。",
+        "semantic_alignment: 95/100 — prompt 包含 main_subject；key_elements 命中 3/3。",
+        "reproducibility_score: 74/100 — trace 步骤数 8；核心 Agent 覆盖 3/4。",
+        "task_specific_score: 84/100 — 领域关键词命中 3/7；含教学主题字段。",
+        "layout_quality: 0/100 — 尺寸 1792x1024；edge_density=0.001；边缘密度极低，布局可能过于单调；疑似空白/纯色图。",
+        "aesthetics: 15/100 — entropy=-0.0；variance=0.0；contrast=0.0；极低信息量，美学分大幅降低。",
+        "mock critic"
+      ],
+      "suggestions": [
+        "重新生成视觉资产，确保文件存在且格式有效。",
+        "mock suggestion"
+      ],
+      "metric_scores": {
+        "format_validity": 30,
+        "spec_compliance": 95,
+        "semantic_alignment": 95,
+        "reproducibility_score": 74,
+        "task_specific_score": 84,
+        "layout_quality": 0,
+        "aesthetics": 15,
+        "offline_overall": 56,
+        "overall_weighted": 56,
+        "risk_penalty": 100
+      },
+      "warnings": [],
+      "pipeline_step": "evaluation_completed"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.941852+00:00",
+    "duration_ms": 115
+  },
+  {
+    "step": "save_assets",
+    "agent_name": "AssetManagerAgent",
+    "input_summary": "842c4704",
+    "output_summary": "prompt=842c4704_prompt.txt, report=842c4704_evaluation.json",
+    "metadata": {
+      "prompt_path": "E:\\VisionFlow\\cs599-project\\storage\\prompts\\842c4704_prompt.txt",
+      "report_path": "E:\\VisionFlow\\cs599-project\\storage\\reports\\842c4704_evaluation.json",
+      "trace_path": "E:\\VisionFlow\\cs599-project\\storage\\traces\\842c4704.json",
+      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\generated\\842c4704_ppt_visual.png",
+      "evaluation_overall": 56
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.944359+00:00",
+    "duration_ms": 1
+  }
+]

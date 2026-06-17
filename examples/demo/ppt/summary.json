@@ -1,0 +1,19 @@
+{
+  "task_id": "842c4704",
+  "task_type": "ppt_visual",
+  "route_reason": "method=llm | confidence=0.75 | task_type=ppt_visual | signals=学术, 课程, 汇报, ppt",
+  "asset_file": "asset.png",
+  "output_path_original": "E:\\VisionFlow\\cs599-project\\storage\\generated\\842c4704_ppt_visual.png",
+  "overall_score": 56,
+  "offline_score": 56,
+  "provider_mode": "mock",
+  "pipeline_steps": [
+    "router_decision",
+    "clarification_needed",
+    "visual_spec_created",
+    "prompt_created",
+    "provider_selected",
+    "output_generated",
+    "evaluation_completed"
+  ]
+}

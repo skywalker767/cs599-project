@@ -1,0 +1,184 @@
+{
+  "requirement_match_score": 95,
+  "domain_compliance_score": 80,
+  "visual_quality_score": 25,
+  "prompt_completeness_score": 60,
+  "traceability_score": 74,
+  "risk_count": 0,
+  "overall_score": 67,
+  "offline_score": 67,
+  "vlm_score": null,
+  "evaluator_layers": [
+    "deterministic",
+    "heuristic"
+  ],
+  "score_breakdown": {
+    "format_validity": {
+      "score": 25,
+      "rationale": "SVG XML 解析失败：duplicate attribute: line 4, column 82"
+    },
+    "spec_compliance": {
+      "score": 80,
+      "rationale": "Visual Spec 必填字段覆盖 7/7。"
+    },
+    "semantic_alignment": {
+      "score": 95,
+      "rationale": "prompt 包含 main_subject；key_elements 命中 3/3。"
+    },
+    "reproducibility_score": {
+      "score": 74,
+      "rationale": "trace 步骤数 8；核心 Agent 覆盖 3/4。"
+    },
+    "task_specific_score": {
+      "score": 80,
+      "rationale": "领域关键词命中 4/6。"
+    },
+    "layout_quality": {
+      "score": 60,
+      "rationale": "非 PNG 输出，跳过像素级启发式分析。"
+    },
+    "aesthetics": {
+      "score": 60,
+      "rationale": "非 PNG 输出，跳过美学启发式分析。"
+    }
+  },
+  "rubric": {
+    "visual_validity": {
+      "score": 25,
+      "rationale": "SVG XML 解析失败：duplicate attribute: line 4, column 82",
+      "evidence": [
+        "file=31072f9b_flowchart.svg",
+        "suffix=svg",
+        "扩展名与 output_format=svg 一致",
+        "size=1322B",
+        "文件大小在合理范围内"
+      ],
+      "deductions": []
+    },
+    "spec_completeness": {
+      "score": 100,
+      "rationale": "Visual Spec 关键字段覆盖 7/7。",
+      "evidence": [
+        "present:canvas(aspect_ratio)",
+        "present:layout(scenario/style)",
+        "present:objects(key_elements/main_subject)",
+        "present:style",
+        "present:constraints",
+        "present:title",
+        "present:purpose"
+      ],
+      "deductions": []
+    },
+    "requirement_alignment": {
+      "score": 95,
+      "rationale": "需求对齐基于 prompt 与 Visual Spec 主体/要素的字面覆盖（启发式）。",
+      "evidence": [
+        "prompt 含 main_subject",
+        "key_elements 命中: 主体, 标题, 辅助图形"
+      ],
+      "deductions": []
+    },
+    "domain_fit": {
+      "score": 83,
+      "rationale": "academic_figure 领域 rubric 覆盖 5/6。",
+      "evidence": [
+        "covered:chart_or_diagram_type",
+        "covered:labels",
+        "covered:caption",
+        "covered:data_or_source_hint",
+        "covered:readability"
+      ],
+      "deductions": [
+        "weak_or_missing:academic_style"
+      ]
+    },
+    "traceability": {
+      "score": 83,
+      "rationale": "流水线阶段覆盖 5/6（input→route→clarification→spec→prompt→generation→evaluation）。",
+      "evidence": [
+        "stage:router_decision",
+        "stage:clarification_needed",
+        "stage:visual_spec_created",
+        "stage:prompt_created",
+        "stage:output_generated"
+      ],
+      "deductions": [
+        "missing_stage:evaluation_completed"
+      ]
+    },
+    "reproducibility": {
+      "score": 100,
+      "rationale": "可复现性依据：provider 记录、确定性生成模式、配置快照。",
+      "evidence": [
+        "provider=mock",
+        "generation_mode=mock",
+        "provider=diagram_generator",
+        "generation_mode=svg",
+        "mock/svg provider 输出确定性",
+        "config:image_provider=mock",
+        "config:llm_provider=mock"
+      ],
+      "deductions": []
+    }
+  },
+  "evidence": [
+    "file=31072f9b_flowchart.svg",
+    "suffix=svg",
+    "扩展名与 output_format=svg 一致",
+    "size=1322B",
+    "文件大小在合理范围内",
+    "present:canvas(aspect_ratio)",
+    "present:layout(scenario/style)",
+    "present:objects(key_elements/main_subject)",
+    "present:style",
+    "present:constraints",
+    "present:title",
+    "present:purpose",
+    "prompt 含 main_subject",
+    "key_elements 命中: 主体, 标题, 辅助图形",
+    "covered:chart_or_diagram_type",
+    "covered:labels",
+    "covered:caption",
+    "covered:data_or_source_hint",
+    "covered:readability",
+    "stage:router_decision",
+    "stage:clarification_needed",
+    "stage:visual_spec_created",
+    "stage:prompt_created",
+    "stage:output_generated",
+    "provider=mock",
+    "generation_mode=mock",
+    "provider=diagram_generator",
+    "generation_mode=svg",
+    "mock/svg provider 输出确定性",
+    "config:image_provider=mock",
+    "config:llm_provider=mock"
+  ],
+  "comments": [
+    "format_validity: 25/100 — SVG XML 解析失败：duplicate attribute: line 4, column 82",
+    "spec_compliance: 80/100 — Visual Spec 必填字段覆盖 7/7。",
+    "semantic_alignment: 95/100 — prompt 包含 main_subject；key_elements 命中 3/3。",
+    "reproducibility_score: 74/100 — trace 步骤数 8；核心 Agent 覆盖 3/4。",
+    "task_specific_score: 80/100 — 领域关键词命中 4/6。",
+    "layout_quality: 60/100 — 非 PNG 输出，跳过像素级启发式分析。",
+    "aesthetics: 60/100 — 非 PNG 输出，跳过美学启发式分析。",
+    "mock critic"
+  ],
+  "suggestions": [
+    "重新生成视觉资产，确保文件存在且格式有效。",
+    "mock suggestion"
+  ],
+  "metric_scores": {
+    "format_validity": 25,
+    "spec_compliance": 80,
+    "semantic_alignment": 95,
+    "reproducibility_score": 74,
+    "task_specific_score": 80,
+    "layout_quality": 60,
+    "aesthetics": 60,
+    "offline_overall": 67,
+    "overall_weighted": 67,
+    "risk_penalty": 100
+  },
+  "warnings": []
+}

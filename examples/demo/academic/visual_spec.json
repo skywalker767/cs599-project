@@ -1,0 +1,88 @@
+{
+  "task_type": "academic_figure",
+  "title": "演示视觉标题",
+  "scenario": "演示场景",
+  "target_audience": "机器学习方向的研究人员与审稿人",
+  "purpose": "传达核心信息",
+  "style": "清晰专业",
+  "aspect_ratio": "4:3",
+  "main_subject": "演示主体",
+  "key_elements": [
+    "主体",
+    "标题",
+    "辅助图形"
+  ],
+  "text_requirements": [
+    "模块标签",
+    "数据流向",
+    "图注说明"
+  ],
+  "constraints": [
+    "箭头方向明确",
+    "字号适合印刷",
+    "模块对齐",
+    "ensure readable labels and clear arrows",
+    "模块对齐排列",
+    "箭头表示数据/控制流",
+    "标签字号不小于 10pt"
+  ],
+  "avoid": [
+    "过度装饰",
+    "低对比度文字",
+    "模糊标签"
+  ],
+  "output_format": "svg",
+  "evaluation_dimensions": [
+    "模块关系",
+    "标签可读性",
+    "流程逻辑",
+    "学术风格"
+  ],
+  "product_poster": null,
+  "educational": null,
+  "academic": {
+    "entities": [
+      "主体",
+      "标题",
+      "辅助图形"
+    ],
+    "relationships": [
+      "主体 → 标题",
+      "标题 → 辅助图形"
+    ],
+    "labels": [
+      "主体",
+      "标题",
+      "辅助图形"
+    ],
+    "directionality": "left-to-right",
+    "layout": "horizontal-pipeline",
+    "notation": "block-diagram",
+    "caption": "演示主体",
+    "export_format": "svg"
+  },
+  "field_provenance": {
+    "title": "inferred",
+    "key_element:输入模块": "default",
+    "key_element:处理模块": "default",
+    "key_element:模型模块": "default",
+    "key_element:输出模块": "default",
+    "key_element:连接箭头": "default",
+    "key_element:为一篇机器学习论文绘制方法流程图（method": "user_input",
+    "key_element:pipeline": "user_input",
+    "key_element:architecture": "user_input",
+    "style": "inferred",
+    "purpose": "inferred",
+    "scenario": "inferred",
+    "output_format": "user_input",
+    "aspect_ratio": "user_input",
+    "target_audience": "user_input",
+    "key_element:主体": "inferred",
+    "key_element:标题": "inferred",
+    "key_element:辅助图形": "inferred",
+    "academic.entity:主体": "inferred",
+    "academic.entity:标题": "inferred",
+    "academic.entity:辅助图形": "inferred",
+    "main_subject": "user_input"
+  }
+}

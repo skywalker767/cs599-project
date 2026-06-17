@@ -11,11 +11,11 @@
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Tests](https://img.shields.io/badge/Tests-129_passed-22C55E?style=for-the-badge)](tests/)
-[![CI](https://github.com/skywalker767/Spec2Vision/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-129_passed-22C55E?style=for-the-badge)](docs/test_report.md)
+[![CI](https://github.com/skywalker767/Spec2Vision/actions/workflows/test.yml/badge.svg)](.github/workflows/test.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-[效果展示](#-效果展示) · [快速开始](#-快速开始) · [核心能力](#-核心能力) · [架构](#-架构与流水线) · [API](#-api-一览) · [文档](#-文档)
+[效果展示](#-效果展示) · [5 分钟 Demo](#-5-分钟-demo) · [快速开始](#-快速开始) · [修复说明](docs/fix_report.md) · [测试报告](docs/test_report.md)
 
 <br>
 
@@ -25,11 +25,11 @@
 
 ## ✨ 效果展示
 
-> **9 个真实生成样例** · 完整 `/generate` 流水线 · PNG 由 **OpenAI Images API** 生成 · 学术流程图为本地 **SVG DiagramGenerator**
+> **默认 clone 后使用 Mock provider**（无 API Key、可复现）。下方 PNG 预览图为维护者用 OpenAI Images API **可选生成**的静态样例，存放于 `docs/images/examples/`。
 >
-> 生成时间：2026-06-17 · `LLM_PROVIDER=deepseek` · `IMAGE_PROVIDER=openai` · 离线评估分 63–77
+> 学术 SVG 由本地 `DiagramGenerator` 离线渲染。**离线启发式评估分 63–77，不代表人类审美判断。**
 >
-> 重新生成：`IMAGE_PROVIDER=openai LLM_PROVIDER=deepseek make readme-examples`（需 API Key；CI/本地测试仍用 Mock）
+> 老师验收请优先看 [`examples/demo/`](examples/demo/)（Mock 完整工件）或运行 `python benchmark.py --demo examples/ecommerce_case.json`。
 
 ### 精选 · 三类典型场景
 
@@ -135,6 +135,32 @@
 元数据：`docs/images/examples/manifest.json` · 用例 JSON：[`examples/`](examples/) · Benchmark：[`benchmarks/examples.jsonl`](benchmarks/examples.jsonl)
 
 </details>
+
+---
+
+## ⏱ 5 分钟 Demo
+
+**无需 API Key** — 与课程验收路径一致：
+
+```bash
+cp .env.example .env          # Windows: copy .env.example .env
+pip install -r requirements.txt
+python -m pytest tests/ -q      # 129 passed
+
+# 单案例端到端（Mock PNG / SVG）
+python benchmark.py --demo examples/ecommerce_case.json
+python benchmark.py --demo examples/academic_case.json
+python benchmark.py --demo examples/ppt_case.json
+
+# 查看预导出完整工件（request / spec / prompt / asset / evaluation / trace）
+ls examples/demo/ecommerce/
+```
+
+预导出样例目录 [`examples/demo/`](examples/demo/) 含三类任务的完整 JSON + 资产文件。重新导出：
+
+```bash
+python scripts/export_demo_cases.py
+```
 
 ---
 
@@ -279,15 +305,17 @@ flowchart TB
 
 ## ⚙️ 配置一览
 
-`.env.example` 默认即可离线运行：
+`.env.example` 默认即可离线运行（**无需填写 API Key**）：
 
-| 变量 | 默认 | 说明 |
-|------|------|------|
-| `IMAGE_PROVIDER` | `mock` | `mock` 离线占位图 · `openai` 真实图像 API |
-| `LLM_PROVIDER` | `mock` | `mock` / `deepseek` / `openai` |
-| `DEMO_MODE` | `false` | `true` 时强制 Mock LLM + Mock 图像 |
-| `VISION_EVALUATOR_PROVIDER` | `none` | `openai` 启用可选 VLM（需 Key） |
-| `OCR_PROVIDER` | `none` | 扫描 PDF OCR 预留，默认关闭 |
+| 变量 | 默认 | 必填？ | 说明 |
+|------|------|--------|------|
+| `IMAGE_PROVIDER` | `mock` | 否 | `mock` 离线 PNG · `openai` 需 `OPENAI_API_KEY` |
+| `LLM_PROVIDER` | `mock` | 否 | `mock` 离线 · `deepseek`/`openai` 需对应 Key |
+| `OPENAI_API_KEY` | 空 | 仅 openai 模式 | 图像/LLM OpenAI |
+| `DEEPSEEK_API_KEY` | 空 | 仅 deepseek 模式 | 文本 LLM |
+| `DEMO_MODE` | `false` | 否 | `true` 强制 Mock |
+| `VISION_EVALUATOR_PROVIDER` | `none` | 否 | `openai` 可选 VLM（需 Key） |
+| `OCR_PROVIDER` | `none` | 否 | 扫描 PDF OCR 预留，默认关闭 |
 
 **Mock vs OpenAI：**
 
@@ -318,19 +346,23 @@ flowchart TB
 
 ## 📊 Benchmark
 
-12 个基准用例（4 电商 + 4 学术 + 4 PPT），见 `benchmarks/examples.jsonl`：
+**Smoke / 回归套件**（非严谨 ML benchmark）— 12 个 JSONL 用例，验证路由 + 生成 + 启发式评估链路：
 
 ```bash
-IMAGE_PROVIDER=mock make benchmark
+python benchmark.py --benchmark
+# 或
+make benchmark
 ```
 
-| 指标（Mock 模式示例） | 值 |
-|----------------------|-----|
-| routing_accuracy | 91.7% |
-| generation_success_rate | 100% |
-| evaluator_avg_score (offline) | ~58.6 |
+测试阈值：`routing_accuracy >= 0.75`（见 `tests/test_benchmark.py`）。指标仅供回归，不代表真实业务 KPI。
 
-> Mock 纯色占位图会触发 blank/low-entropy 检测，离线分偏低是**设计预期**。
+| 指标（Mock smoke 示例） | 值 |
+|----------------------|-----|
+| routing_accuracy | ≥ 75% |
+| generation_success_rate | 100% |
+| evaluator_avg_score (offline) | ~58（Mock 占位图预期偏低） |
+
+> Mock 纯色占位图会触发 blank/low-entropy 检测，离线分偏低是**设计预期**。详见 [`docs/fix_report.md`](docs/fix_report.md)。
 
 ---
 
@@ -362,18 +394,21 @@ Streamlit 界面展示：
 
 ## 🧪 Testing
 
-**129 个测试 · 默认 Mock · 无外部 API · 结果 deterministic**
+**129 passed, 1 skipped** · 默认 Mock · 无外部 API · 可验证报告：[`docs/test_report.md`](docs/test_report.md)
 
 ```bash
-cp .env.example .env && pytest        # 验收路径
-make test                             # 同上
-make coverage                         # 核心模块 ≥80%
-make lint                             # ruff（CI 同款）
+cp .env.example .env && python -m pytest tests/ -v    # 验收路径
+python scripts/validate_repo_format.py               # 防止单行压缩回归
+python -m compileall -q app tests scripts benchmark.py
+make test
+make lint          # ruff
+make format        # black
+make coverage      # ≥80% 核心模块
 ```
 
-CI（`.github/workflows/ci.yml`）：Python 3.11 · `ruff check` · `pytest` · **无需 secrets**
+CI：[`.github/workflows/test.yml`](.github/workflows/test.yml)（format + compile + pytest）· [`.github/workflows/ci.yml`](.github/workflows/ci.yml)（ruff + pytest）· **无需 secrets**
 
-覆盖亮点：Mock 端到端 · 配置一致性 · Router 澄清 edge cases · Evaluator rubric · API 错误路径 · PDF 边界
+覆盖亮点：Mock 端到端 · 配置一致性 · Router 澄清 · Evaluator rubric · API 错误路径 · `examples/demo/` 工件
 
 ---
 

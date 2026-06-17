@@ -1,0 +1,11 @@
+{
+  "user_input": "为《人工智能驱动的软件开发》课程结课汇报制作一张 PPT 封面配图（演示文稿首页 / slide cover）。画面走专业科技感风格：深色科技蓝渐变背景，融入抽象的神经网络节点、流动的代码字符与电路板纹理等元素；左侧预留竖向标题区，用于放置主标题『人工智能驱动的软件开发』与副标题『从 Copilot 到多智能体协作』；右下角预留品牌/校徽区域。整体用于课程演示与学术汇报，需保证在投影仪与大屏演示时画面清晰、层次分明、具备视觉冲击力。",
+  "task_type": "auto",
+  "style_preference": "专业科技感、深色科技蓝、未来感",
+  "target_audience": "课程师生与答辩评委",
+  "aspect_ratio": "16:9",
+  "enable_revision": false,
+  "clarification_answers": [],
+  "skip_clarification": true,
+  "document_context": null
+}

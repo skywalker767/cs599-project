@@ -1,0 +1,183 @@
+{
+  "requirement_match_score": 95,
+  "domain_compliance_score": 85,
+  "visual_quality_score": 30,
+  "prompt_completeness_score": 78,
+  "traceability_score": 74,
+  "risk_count": 5,
+  "overall_score": 41,
+  "offline_score": 41,
+  "vlm_score": null,
+  "evaluator_layers": [
+    "deterministic",
+    "heuristic"
+  ],
+  "score_breakdown": {
+    "format_validity": {
+      "score": 30,
+      "rationale": "PNG 疑似纯色/空白图（亮度跨度 0）。"
+    },
+    "spec_compliance": {
+      "score": 95,
+      "rationale": "Visual Spec 必填字段覆盖 7/7；输出尺寸 1792x1024 符合规格 1792x1024。"
+    },
+    "semantic_alignment": {
+      "score": 95,
+      "rationale": "prompt 包含 main_subject；key_elements 命中 3/3。"
+    },
+    "reproducibility_score": {
+      "score": 74,
+      "rationale": "trace 步骤数 8；核心 Agent 覆盖 3/4。"
+    },
+    "task_specific_score": {
+      "score": 85,
+      "rationale": "领域关键词命中 5/7；含 CTA 字段。"
+    },
+    "layout_quality": {
+      "score": 0,
+      "rationale": "尺寸 1792x1024；edge_density=0.002；边缘密度极低，布局可能过于单调；疑似空白/纯色图。"
+    },
+    "aesthetics": {
+      "score": 15,
+      "rationale": "entropy=-0.0；variance=0.0；contrast=0.0；极低信息量，美学分大幅降低。"
+    }
+  },
+  "rubric": {
+    "visual_validity": {
+      "score": 30,
+      "rationale": "PNG 疑似纯色/空白图（亮度跨度 0）。",
+      "evidence": [
+        "file=6473f801_ecommerce_banner.png",
+        "suffix=png",
+        "扩展名与 output_format=png 一致",
+        "size=7770B",
+        "文件大小在合理范围内"
+      ],
+      "deductions": []
+    },
+    "spec_completeness": {
+      "score": 100,
+      "rationale": "Visual Spec 关键字段覆盖 7/7。",
+      "evidence": [
+        "present:canvas(aspect_ratio)",
+        "present:layout(scenario/style)",
+        "present:objects(key_elements/main_subject)",
+        "present:style",
+        "present:constraints",
+        "present:title",
+        "present:purpose"
+      ],
+      "deductions": []
+    },
+    "requirement_alignment": {
+      "score": 95,
+      "rationale": "需求对齐基于 prompt 与 Visual Spec 主体/要素的字面覆盖（启发式）。",
+      "evidence": [
+        "prompt 含 main_subject",
+        "key_elements 命中: 主体, 标题, 辅助图形"
+      ],
+      "deductions": []
+    },
+    "domain_fit": {
+      "score": 83,
+      "rationale": "ecommerce_banner 领域 rubric 覆盖 5/6。",
+      "evidence": [
+        "covered:product",
+        "covered:background",
+        "covered:cta_or_marketing_text",
+        "covered:composition",
+        "covered:target_platform"
+      ],
+      "deductions": [
+        "weak_or_missing:brand_or_category"
+      ]
+    },
+    "traceability": {
+      "score": 83,
+      "rationale": "流水线阶段覆盖 5/6（input→route→clarification→spec→prompt→generation→evaluation）。",
+      "evidence": [
+        "stage:router_decision",
+        "stage:clarification_needed",
+        "stage:visual_spec_created",
+        "stage:prompt_created",
+        "stage:output_generated"
+      ],
+      "deductions": [
+        "missing_stage:evaluation_completed"
+      ]
+    },
+    "reproducibility": {
+      "score": 100,
+      "rationale": "可复现性依据：provider 记录、确定性生成模式、配置快照。",
+      "evidence": [
+        "provider=mock",
+        "generation_mode=mock",
+        "mock/svg provider 输出确定性",
+        "config:image_provider=mock",
+        "config:llm_provider=mock"
+      ],
+      "deductions": []
+    }
+  },
+  "evidence": [
+    "file=6473f801_ecommerce_banner.png",
+    "suffix=png",
+    "扩展名与 output_format=png 一致",
+    "size=7770B",
+    "文件大小在合理范围内",
+    "present:canvas(aspect_ratio)",
+    "present:layout(scenario/style)",
+    "present:objects(key_elements/main_subject)",
+    "present:style",
+    "present:constraints",
+    "present:title",
+    "present:purpose",
+    "prompt 含 main_subject",
+    "key_elements 命中: 主体, 标题, 辅助图形",
+    "covered:product",
+    "covered:background",
+    "covered:cta_or_marketing_text",
+    "covered:composition",
+    "covered:target_platform",
+    "stage:router_decision",
+    "stage:clarification_needed",
+    "stage:visual_spec_created",
+    "stage:prompt_created",
+    "stage:output_generated",
+    "provider=mock",
+    "generation_mode=mock",
+    "mock/svg provider 输出确定性",
+    "config:image_provider=mock",
+    "config:llm_provider=mock"
+  ],
+  "comments": [
+    "format_validity: 30/100 — PNG 疑似纯色/空白图（亮度跨度 0）。",
+    "spec_compliance: 95/100 — Visual Spec 必填字段覆盖 7/7；输出尺寸 1792x1024 符合规格 1792x1024。",
+    "semantic_alignment: 95/100 — prompt 包含 main_subject；key_elements 命中 3/3。",
+    "reproducibility_score: 74/100 — trace 步骤数 8；核心 Agent 覆盖 3/4。",
+    "task_specific_score: 85/100 — 领域关键词命中 5/7；含 CTA 字段。",
+    "layout_quality: 0/100 — 尺寸 1792x1024；edge_density=0.002；边缘密度极低，布局可能过于单调；疑似空白/纯色图。",
+    "aesthetics: 15/100 — entropy=-0.0；variance=0.0；contrast=0.0；极低信息量，美学分大幅降低。",
+    "mock critic"
+  ],
+  "suggestions": [
+    "移除绝对化宣传用语，降低合规风险。",
+    "重新生成视觉资产，确保文件存在且格式有效。",
+    "mock suggestion"
+  ],
+  "metric_scores": {
+    "format_validity": 30,
+    "spec_compliance": 95,
+    "semantic_alignment": 95,
+    "reproducibility_score": 74,
+    "task_specific_score": 85,
+    "layout_quality": 0,
+    "aesthetics": 15,
+    "offline_overall": 41,
+    "overall_weighted": 41,
+    "risk_penalty": 25
+  },
+  "warnings": [
+    "检测到 5 个风险宣传词。"
+  ]
+}

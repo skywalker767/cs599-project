@@ -1,0 +1,800 @@
+[
+  {
+    "step": "route_task",
+    "agent_name": "TaskRouterAgent",
+    "input_summary": "为一篇机器学习论文绘制方法流程图（method pipeline / architecture diagram）。整个方法分为五个阶段：① 数据预处理（缺失值清洗、归一化、数据增强）；② 特征提取（提取时域与频域特征）；③ 双分支神经网络（",
+    "output_summary": "type=academic_figure, confidence=1.0, method=manual",
+    "metadata": {
+      "task_type": "academic_figure",
+      "route_reason": "method=manual | confidence=1.0 | task_type=academic_figure | signals=manual_override:academic_figure",
+      "route_result": {
+        "task_type": "academic_figure",
+        "confidence": 1.0,
+        "reasoning": "调用方显式指定 task_type=academic_figure。",
+        "matched_signals": [
+          "manual_override:academic_figure"
+        ],
+        "evidence": [
+          "manual_override:academic_figure"
+        ],
+        "clarification_required": false,
+        "clarification_question": null,
+        "llm_used": false,
+        "fallback_reason": null,
+        "method": "manual"
+      },
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": true,
+      "llm_parse_ok": false,
+      "pipeline_step": "router_decision"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.785243+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "generate_clarification",
+    "agent_name": "ClarificationAgent",
+    "input_summary": "为一篇机器学习论文绘制方法流程图（method pipeline / architecture diagram）。整个方法分为五个阶段：① 数据预处理（缺失值清洗、归一化、数据增强）；② 特征提取（提",
+    "output_summary": "questions=6, resolved=6, llm=mock",
+    "metadata": {
+      "questions": [
+        {
+          "question_id": "figure_type",
+          "question_text": "请选择论文图类型",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "方法流程图",
+              "value": "method_pipeline",
+              "description": null,
+              "incompatible_with": [
+                "model_architecture",
+                "experiment_workflow",
+                "graphical_abstract",
+                "comparison_framework"
+              ]
+            },
+            {
+              "label": "模型结构图",
+              "value": "model_architecture",
+              "description": null,
+              "incompatible_with": [
+                "method_pipeline",
+                "experiment_workflow",
+                "graphical_abstract",
+                "comparison_framework"
+              ]
+            },
+            {
+              "label": "实验流程图",
+              "value": "experiment_workflow",
+              "description": null,
+              "incompatible_with": [
+                "method_pipeline",
+                "model_architecture",
+                "graphical_abstract",
+                "comparison_framework"
+              ]
+            },
+            {
+              "label": "图形摘要",
+              "value": "graphical_abstract",
+              "description": null,
+              "incompatible_with": [
+                "method_pipeline",
+                "model_architecture",
+                "experiment_workflow",
+                "comparison_framework"
+              ]
+            },
+            {
+              "label": "对比框架图",
+              "value": "comparison_framework",
+              "description": null,
+              "incompatible_with": [
+                "method_pipeline",
+                "model_architecture",
+                "experiment_workflow",
+                "graphical_abstract"
+              ]
+            }
+          ],
+          "default_value": "method_pipeline",
+          "reason": "图类型决定模块组织方式和 Visual Spec 的 key_elements。"
+        },
+        {
+          "question_id": "output_format",
+          "question_text": "请选择输出格式",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "SVG 矢量图",
+              "value": "svg",
+              "description": null,
+              "incompatible_with": [
+                "mermaid",
+                "png",
+                "pdf"
+              ]
+            },
+            {
+              "label": "Mermaid 源码",
+              "value": "mermaid",
+              "description": null,
+              "incompatible_with": [
+                "svg",
+                "png",
+                "pdf"
+              ]
+            },
+            {
+              "label": "PNG 图片",
+              "value": "png",
+              "description": null,
+              "incompatible_with": [
+                "svg",
+                "mermaid",
+                "pdf"
+              ]
+            },
+            {
+              "label": "PDF 图示",
+              "value": "pdf",
+              "description": null,
+              "incompatible_with": [
+                "svg",
+                "mermaid",
+                "png"
+              ]
+            }
+          ],
+          "default_value": "svg",
+          "reason": "输出格式影响生成工具链（SVG 流程图 vs 位图）。"
+        },
+        {
+          "question_id": "label_language",
+          "question_text": "请选择图中文字语言",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "英文标签",
+              "value": "en",
+              "description": null,
+              "incompatible_with": [
+                "zh"
+              ]
+            },
+            {
+              "label": "中文标签",
+              "value": "zh",
+              "description": null,
+              "incompatible_with": [
+                "en"
+              ]
+            }
+          ],
+          "default_value": "en",
+          "reason": "标签语言影响模块命名和图注建议。"
+        },
+        {
+          "question_id": "academic_style",
+          "question_text": "请选择学术视觉风格",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "黑白极简",
+              "value": "black_white_minimal",
+              "description": null,
+              "incompatible_with": [
+                "blue_gray_tech",
+                "journal_clean",
+                "conference_poster"
+              ]
+            },
+            {
+              "label": "蓝灰科技",
+              "value": "blue_gray_tech",
+              "description": null,
+              "incompatible_with": [
+                "black_white_minimal",
+                "journal_clean",
+                "conference_poster"
+              ]
+            },
+            {
+              "label": "期刊论文风",
+              "value": "journal_clean",
+              "description": null,
+              "incompatible_with": [
+                "black_white_minimal",
+                "blue_gray_tech",
+                "conference_poster"
+              ]
+            },
+            {
+              "label": "会议海报风",
+              "value": "conference_poster",
+              "description": null,
+              "incompatible_with": [
+                "black_white_minimal",
+                "blue_gray_tech",
+                "journal_clean"
+              ]
+            }
+          ],
+          "default_value": "journal_clean",
+          "reason": "学术风格影响配色、线宽和标签排版规范。"
+        },
+        {
+          "question_id": "layout_direction",
+          "question_text": "请选择布局方向",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "自上而下",
+              "value": "top_down",
+              "description": null,
+              "incompatible_with": [
+                "left_right",
+                "radial",
+                "nested"
+              ]
+            },
+            {
+              "label": "自左而右",
+              "value": "left_right",
+              "description": null,
+              "incompatible_with": [
+                "top_down",
+                "radial",
+                "nested"
+              ]
+            },
+            {
+              "label": "中心辐射",
+              "value": "radial",
+              "description": null,
+              "incompatible_with": [
+                "top_down",
+                "left_right",
+                "nested"
+              ]
+            },
+            {
+              "label": "分层嵌套",
+              "value": "nested",
+              "description": null,
+              "incompatible_with": [
+                "top_down",
+                "left_right",
+                "radial"
+              ]
+            }
+          ],
+          "default_value": "top_down",
+          "reason": "布局方向影响读者理解路径。"
+        },
+        {
+          "question_id": "information_density",
+          "question_text": "请选择信息密度",
+          "question_type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "极简，少元素",
+              "value": "low",
+              "description": null,
+              "incompatible_with": [
+                "medium",
+                "high"
+              ]
+            },
+            {
+              "label": "适中，主体清晰",
+              "value": "medium",
+              "description": null,
+              "incompatible_with": [
+                "low",
+                "high"
+              ]
+            },
+            {
+              "label": "信息丰富，适合说明型内容",
+              "value": "high",
+              "description": null,
+              "incompatible_with": [
+                "low",
+                "medium"
+              ]
+            }
+          ],
+          "default_value": "medium",
+          "reason": "信息密度影响画面元素数量与留白，需与任务目的匹配。"
+        }
+      ],
+      "question_sources": {
+        "figure_type": "core",
+        "output_format": "core",
+        "label_language": "core",
+        "academic_style": "core",
+        "layout_direction": "optional",
+        "information_density": "optional"
+      },
+      "defaults": {
+        "figure_type": "method_pipeline",
+        "output_format": "svg",
+        "label_language": "en",
+        "academic_style": "journal_clean",
+        "layout_direction": "top_down",
+        "information_density": "medium"
+      },
+      "resolved_answers": {
+        "figure_type": "method_pipeline",
+        "output_format": "svg",
+        "label_language": "en",
+        "academic_style": "journal_clean",
+        "layout_direction": "top_down",
+        "information_density": "medium"
+      },
+      "user_selected": [],
+      "clarification_needed": false,
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": false,
+      "llm_parse_ok": false,
+      "llm_question_count": 0,
+      "pipeline_step": "clarification_needed"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.786100+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "parse_requirement",
+    "agent_name": "RequirementAgent",
+    "input_summary": "为一篇机器学习论文绘制方法流程图（method pipeline / architecture diagram）。整个方法分为五个阶段：① 数据预处理（缺失值清洗、归一化、数据增强）；② 特征提取（提取时域与频域特征）；③ 双分支神经网络（",
+    "output_summary": "subject=演示主体, style=简洁",
+    "metadata": {
+      "purpose": "演示",
+      "main_subject": "演示主体",
+      "style": "简洁",
+      "target_audience": "机器学习方向的研究人员与审稿人",
+      "aspect_ratio": "4:3",
+      "user_input": "为一篇机器学习论文绘制方法流程图（method pipeline / architecture diagram）。整个方法分为五个阶段：① 数据预处理（缺失值清洗、归一化、数据增强）；② 特征提取（提取时域与频域特征）；③ 双分支神经网络（CNN 分支提取局部特征，Transformer 分支建模全局依赖，两分支并行）；④ 特征融合模块（拼接 + 注意力加权）；⑤ 分类输出与损失计算（Softmax 输出类别概率，交叉熵损失）。要求学术简洁风格：模块使用圆角矩形框，阶段之间用带箭头的连线表示数据流方向，关键张量维度可标注在连线旁，整体符合期刊论文与学术汇报的排版规范，输出为矢量图便于在论文中无损缩放。",
+      "clarification": {
+        "figure_type": "method_pipeline",
+        "output_format": "svg",
+        "label_language": "en",
+        "academic_style": "journal_clean",
+        "layout_direction": "top_down",
+        "information_density": "medium"
+      },
+      "information_density": "medium",
+      "figure_type": "method_pipeline",
+      "output_format": "svg",
+      "label_language": "en",
+      "academic_style": "journal_clean",
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": false,
+      "llm_parse_ok": true
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.787104+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "build_visual_spec",
+    "agent_name": "VisualSpecAgent",
+    "input_summary": "{'purpose': '演示', 'main_subject': '演示主体', 'style': '简洁', 'target_audience': '机器学习方向的研究人员与审稿人', 'aspect_ratio': '4:3', 'u",
+    "output_summary": "title=演示视觉标题, elements=3",
+    "metadata": {
+      "task_type": "academic_figure",
+      "title": "演示视觉标题",
+      "scenario": "演示场景",
+      "target_audience": "机器学习方向的研究人员与审稿人",
+      "purpose": "传达核心信息",
+      "style": "清晰专业",
+      "aspect_ratio": "4:3",
+      "main_subject": "演示主体",
+      "key_elements": [
+        "主体",
+        "标题",
+        "辅助图形"
+      ],
+      "text_requirements": [
+        "模块标签",
+        "数据流向",
+        "图注说明"
+      ],
+      "constraints": [
+        "箭头方向明确",
+        "字号适合印刷",
+        "模块对齐",
+        "ensure readable labels and clear arrows"
+      ],
+      "avoid": [
+        "过度装饰",
+        "低对比度文字",
+        "模糊标签"
+      ],
+      "output_format": "svg",
+      "evaluation_dimensions": [
+        "模块关系",
+        "标签可读性",
+        "流程逻辑",
+        "学术风格"
+      ],
+      "product_poster": null,
+      "educational": null,
+      "academic": {
+        "entities": [
+          "主体",
+          "标题",
+          "辅助图形"
+        ],
+        "relationships": [
+          "主体 → 标题",
+          "标题 → 辅助图形"
+        ],
+        "labels": [
+          "主体",
+          "标题",
+          "辅助图形"
+        ],
+        "directionality": "left-to-right",
+        "layout": "horizontal-pipeline",
+        "notation": "block-diagram",
+        "caption": "演示主体",
+        "export_format": "svg"
+      },
+      "field_provenance": {
+        "title": "inferred",
+        "key_element:输入模块": "default",
+        "key_element:处理模块": "default",
+        "key_element:模型模块": "default",
+        "key_element:输出模块": "default",
+        "key_element:连接箭头": "default",
+        "key_element:为一篇机器学习论文绘制方法流程图（method": "user_input",
+        "key_element:pipeline": "user_input",
+        "key_element:architecture": "user_input",
+        "style": "inferred",
+        "purpose": "inferred",
+        "scenario": "inferred",
+        "output_format": "user_input",
+        "aspect_ratio": "user_input",
+        "target_audience": "user_input",
+        "key_element:主体": "inferred",
+        "key_element:标题": "inferred",
+        "key_element:辅助图形": "inferred",
+        "academic.entity:主体": "inferred",
+        "academic.entity:标题": "inferred",
+        "academic.entity:辅助图形": "inferred",
+        "main_subject": "user_input"
+      },
+      "clarification_applied": {
+        "figure_type": "method_pipeline",
+        "output_format": "svg",
+        "label_language": "en",
+        "academic_style": "journal_clean",
+        "layout_direction": "top_down",
+        "information_density": "medium"
+      },
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": false,
+      "llm_parse_ok": true,
+      "pipeline_step": "visual_spec_created"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.788054+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "enrich_domain_spec",
+    "agent_name": "AcademicFigureAgent",
+    "input_summary": "academic_figure",
+    "output_summary": "modules=3",
+    "metadata": {
+      "method_modules": [
+        "主体",
+        "标题",
+        "辅助图形"
+      ],
+      "flow_order": "top-to-bottom",
+      "caption_suggestion": "Figure 1: 演示视觉标题",
+      "preferred_output": [
+        "svg",
+        "mermaid",
+        "png"
+      ],
+      "label_guidelines": [
+        "使用无衬线字体",
+        "模块名简洁",
+        "箭头标注数据流"
+      ]
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.788877+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "build_prompt",
+    "agent_name": "PromptAgent",
+    "input_summary": "演示视觉标题",
+    "output_summary": "# Diagram Spec: 演示视觉标题\nSubject: 演示主体\nScene: 演示场景\nStyle: 清晰专业\nComposition: top-to-bottom flowchart wi...",
+    "metadata": {
+      "prompt_length": 341,
+      "task_type": "academic_figure",
+      "llm_requested_provider": "mock",
+      "llm_actual_provider": "mock",
+      "llm_fallback": true,
+      "llm_parse_ok": false,
+      "pipeline_step": "prompt_created"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.790057+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "select_provider",
+    "agent_name": "AssetManagerAgent",
+    "input_summary": "mock",
+    "output_summary": "provider=mock, mode=mock",
+    "metadata": {
+      "provider": "mock",
+      "image_provider": "mock",
+      "generation_mode": "mock",
+      "pipeline_step": "provider_selected"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.790914+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "generate_asset",
+    "agent_name": "AssetManagerAgent",
+    "input_summary": "academic_figure",
+    "output_summary": "31072f9b_flowchart.svg",
+    "metadata": {
+      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\31072f9b_flowchart.svg",
+      "provider": "diagram_generator",
+      "image_provider": "diagram_generator",
+      "generation_mode": "svg",
+      "task_type": "academic_figure",
+      "requested_aspect_ratio": "4:3",
+      "resolved_width": 1536,
+      "resolved_height": 1024,
+      "aspect_ratio_requested": "4:3",
+      "aspect_ratio_normalized": "1536x1024",
+      "width": 1536,
+      "height": 1024,
+      "orientation": "landscape",
+      "size_normalized": true,
+      "normalization_reason": "ideal 1280x960 snapped to API size 1536x1024 (provider supports dict_keys(['1024x1024', '1792x1024', '1024x1792', '1536x1024', '1024x1536']))",
+      "pipeline_step": "output_generated"
+    },
+    "warnings": [
+      "ideal 1280x960 snapped to API size 1536x1024 (provider supports dict_keys(['1024x1024', '1792x1024', '1024x1792', '1536x1024', '1024x1536']))"
+    ],
+    "timestamp": "2026-06-17T14:36:23.791344+00:00",
+    "duration_ms": 0
+  },
+  {
+    "step": "evaluate_asset",
+    "agent_name": "CriticAgent",
+    "input_summary": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\31072f9b_flowchart.svg",
+    "output_summary": "overall=67, offline=67",
+    "metadata": {
+      "requirement_match_score": 95,
+      "domain_compliance_score": 80,
+      "visual_quality_score": 25,
+      "prompt_completeness_score": 60,
+      "traceability_score": 74,
+      "risk_count": 0,
+      "overall_score": 67,
+      "offline_score": 67,
+      "vlm_score": null,
+      "evaluator_layers": [
+        "deterministic",
+        "heuristic"
+      ],
+      "score_breakdown": {
+        "format_validity": {
+          "score": 25,
+          "rationale": "SVG XML 解析失败：duplicate attribute: line 4, column 82"
+        },
+        "spec_compliance": {
+          "score": 80,
+          "rationale": "Visual Spec 必填字段覆盖 7/7。"
+        },
+        "semantic_alignment": {
+          "score": 95,
+          "rationale": "prompt 包含 main_subject；key_elements 命中 3/3。"
+        },
+        "reproducibility_score": {
+          "score": 74,
+          "rationale": "trace 步骤数 8；核心 Agent 覆盖 3/4。"
+        },
+        "task_specific_score": {
+          "score": 80,
+          "rationale": "领域关键词命中 4/6。"
+        },
+        "layout_quality": {
+          "score": 60,
+          "rationale": "非 PNG 输出，跳过像素级启发式分析。"
+        },
+        "aesthetics": {
+          "score": 60,
+          "rationale": "非 PNG 输出，跳过美学启发式分析。"
+        }
+      },
+      "rubric": {
+        "visual_validity": {
+          "score": 25,
+          "rationale": "SVG XML 解析失败：duplicate attribute: line 4, column 82",
+          "evidence": [
+            "file=31072f9b_flowchart.svg",
+            "suffix=svg",
+            "扩展名与 output_format=svg 一致",
+            "size=1322B",
+            "文件大小在合理范围内"
+          ],
+          "deductions": []
+        },
+        "spec_completeness": {
+          "score": 100,
+          "rationale": "Visual Spec 关键字段覆盖 7/7。",
+          "evidence": [
+            "present:canvas(aspect_ratio)",
+            "present:layout(scenario/style)",
+            "present:objects(key_elements/main_subject)",
+            "present:style",
+            "present:constraints",
+            "present:title",
+            "present:purpose"
+          ],
+          "deductions": []
+        },
+        "requirement_alignment": {
+          "score": 95,
+          "rationale": "需求对齐基于 prompt 与 Visual Spec 主体/要素的字面覆盖（启发式）。",
+          "evidence": [
+            "prompt 含 main_subject",
+            "key_elements 命中: 主体, 标题, 辅助图形"
+          ],
+          "deductions": []
+        },
+        "domain_fit": {
+          "score": 83,
+          "rationale": "academic_figure 领域 rubric 覆盖 5/6。",
+          "evidence": [
+            "covered:chart_or_diagram_type",
+            "covered:labels",
+            "covered:caption",
+            "covered:data_or_source_hint",
+            "covered:readability"
+          ],
+          "deductions": [
+            "weak_or_missing:academic_style"
+          ]
+        },
+        "traceability": {
+          "score": 83,
+          "rationale": "流水线阶段覆盖 5/6（input→route→clarification→spec→prompt→generation→evaluation）。",
+          "evidence": [
+            "stage:router_decision",
+            "stage:clarification_needed",
+            "stage:visual_spec_created",
+            "stage:prompt_created",
+            "stage:output_generated"
+          ],
+          "deductions": [
+            "missing_stage:evaluation_completed"
+          ]
+        },
+        "reproducibility": {
+          "score": 100,
+          "rationale": "可复现性依据：provider 记录、确定性生成模式、配置快照。",
+          "evidence": [
+            "provider=mock",
+            "generation_mode=mock",
+            "provider=diagram_generator",
+            "generation_mode=svg",
+            "mock/svg provider 输出确定性",
+            "config:image_provider=mock",
+            "config:llm_provider=mock"
+          ],
+          "deductions": []
+        }
+      },
+      "evidence": [
+        "file=31072f9b_flowchart.svg",
+        "suffix=svg",
+        "扩展名与 output_format=svg 一致",
+        "size=1322B",
+        "文件大小在合理范围内",
+        "present:canvas(aspect_ratio)",
+        "present:layout(scenario/style)",
+        "present:objects(key_elements/main_subject)",
+        "present:style",
+        "present:constraints",
+        "present:title",
+        "present:purpose",
+        "prompt 含 main_subject",
+        "key_elements 命中: 主体, 标题, 辅助图形",
+        "covered:chart_or_diagram_type",
+        "covered:labels",
+        "covered:caption",
+        "covered:data_or_source_hint",
+        "covered:readability",
+        "stage:router_decision",
+        "stage:clarification_needed",
+        "stage:visual_spec_created",
+        "stage:prompt_created",
+        "stage:output_generated",
+        "provider=mock",
+        "generation_mode=mock",
+        "provider=diagram_generator",
+        "generation_mode=svg",
+        "mock/svg provider 输出确定性",
+        "config:image_provider=mock",
+        "config:llm_provider=mock"
+      ],
+      "comments": [
+        "format_validity: 25/100 — SVG XML 解析失败：duplicate attribute: line 4, column 82",
+        "spec_compliance: 80/100 — Visual Spec 必填字段覆盖 7/7。",
+        "semantic_alignment: 95/100 — prompt 包含 main_subject；key_elements 命中 3/3。",
+        "reproducibility_score: 74/100 — trace 步骤数 8；核心 Agent 覆盖 3/4。",
+        "task_specific_score: 80/100 — 领域关键词命中 4/6。",
+        "layout_quality: 60/100 — 非 PNG 输出，跳过像素级启发式分析。",
+        "aesthetics: 60/100 — 非 PNG 输出，跳过美学启发式分析。",
+        "mock critic"
+      ],
+      "suggestions": [
+        "重新生成视觉资产，确保文件存在且格式有效。",
+        "mock suggestion"
+      ],
+      "metric_scores": {
+        "format_validity": 25,
+        "spec_compliance": 80,
+        "semantic_alignment": 95,
+        "reproducibility_score": 74,
+        "task_specific_score": 80,
+        "layout_quality": 60,
+        "aesthetics": 60,
+        "offline_overall": 67,
+        "overall_weighted": 67,
+        "risk_penalty": 100
+      },
+      "warnings": [],
+      "pipeline_step": "evaluation_completed"
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.793498+00:00",
+    "duration_ms": 1
+  },
+  {
+    "step": "save_assets",
+    "agent_name": "AssetManagerAgent",
+    "input_summary": "31072f9b",
+    "output_summary": "prompt=31072f9b_prompt.txt, report=31072f9b_evaluation.json",
+    "metadata": {
+      "prompt_path": "E:\\VisionFlow\\cs599-project\\storage\\prompts\\31072f9b_prompt.txt",
+      "report_path": "E:\\VisionFlow\\cs599-project\\storage\\reports\\31072f9b_evaluation.json",
+      "trace_path": "E:\\VisionFlow\\cs599-project\\storage\\traces\\31072f9b.json",
+      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\31072f9b_flowchart.svg",
+      "evaluation_overall": 67
+    },
+    "warnings": [],
+    "timestamp": "2026-06-17T14:36:23.795824+00:00",
+    "duration_ms": 1
+  }
+]
