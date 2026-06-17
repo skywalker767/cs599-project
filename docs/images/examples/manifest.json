@@ -8,9 +8,9 @@
   },
   {
     "slug": "academic_pipeline",
-    "file": "examples/academic_pipeline.svg",
+    "file": "examples/academic_pipeline.png",
     "task_type": "academic_figure",
-    "score": 92,
+    "score": 84,
     "title": "五阶段双分支神经网络方法流程图"
   },
   {

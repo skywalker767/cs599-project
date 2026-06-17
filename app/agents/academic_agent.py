@@ -24,7 +24,13 @@ class AcademicFigureAgent:
         }
 
         if state.visual_spec:
-            state.visual_spec.output_format = "svg"
+            # Respect user clarification (e.g. png); only default to svg when unset.
+            fmt = (state.visual_spec.output_format or "").lower().strip()
+            if fmt not in ("png", "pdf"):
+                state.visual_spec.output_format = "svg"
+            enrichment["preferred_output"] = (
+                ["png", "svg", "mermaid"] if fmt == "png" else ["svg", "mermaid", "png"]
+            )
             state.visual_spec.constraints.extend([
                 "模块对齐排列",
                 "箭头表示数据/控制流",

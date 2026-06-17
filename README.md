@@ -23,9 +23,40 @@ https://github.com/skywalker767
 [![Tests](https://img.shields.io/badge/Tests-41_passed-22C55E?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-[快速开始](#-快速开始) · [核心亮点](#-核心亮点) · [Agent 矩阵](#-agent-矩阵) · [API](#-api-一览) · [文档](#-文档)
+[生成示例](#-生成示例) · [快速开始](#-快速开始) · [核心亮点](#-核心亮点) · [Agent 矩阵](#-agent-矩阵) · [API](#-api-一览) · [文档](#-文档)
 
 </div>
+
+---
+
+## 🎨 生成示例
+
+以下示例由 **完整 Multi-Agent 流水线**真实产出（路由 → 澄清 → Visual Spec → Prompt → 资产生成 → 评估）：
+
+<p align="center">
+  <img src="docs/images/examples/ecommerce_coffee.png" alt="电商促销图" width="32%" />
+  <img src="docs/images/examples/academic_pipeline.png" alt="学术流程图" width="32%" />
+  <img src="docs/images/examples/ppt_cover.png" alt="PPT封面" width="32%" />
+</p>
+
+<p align="center">
+  <b>🛒 电商营销图</b> · PNG 1:1 · 83分 &nbsp;|&nbsp;
+  <b>📊 论文流程图</b> · PNG 4:3 · 84分 &nbsp;|&nbsp;
+  <b>📽️ PPT 封面</b> · PNG 16:9 · 80分
+</p>
+
+<details>
+<summary><b>查看 Prompt 输入与重新生成</b></summary>
+
+- 电商：[`examples/ecommerce_case.json`](examples/ecommerce_case.json)
+- 学术：[`examples/academic_case.json`](examples/academic_case.json)
+- PPT：[`examples/ppt_case.json`](examples/ppt_case.json)
+
+```bash
+python scripts/generate_readme_examples.py
+```
+
+</details>
 
 ---
 
@@ -330,39 +361,6 @@ python -m pytest tests/ -v
 
 ---
 
-## 🎨 生成示例
-
-以下示例由 **完整 Multi-Agent 流水线**（路由 → 澄清 → Visual Spec → Prompt → 资产生成 → 评估）真实产出，可作为 README 静态展示图。
-
-<p align="center">
-  <img src="docs/images/examples/ecommerce_coffee.png" alt="电商促销图示例" width="30%" />
-  <img src="docs/images/examples/academic_pipeline.svg" alt="学术流程图示例" width="30%" />
-  <img src="docs/images/examples/ppt_cover.png" alt="PPT封面示例" width="30%" />
-</p>
-
-| 场景 | 输入摘要 | 输出 | 评分 |
-|------|----------|------|------|
-| 🛒 **电商营销图** | 夏季 0 蔗糖冰咖啡小红书促销主图 | PNG · 1:1 | **83** / 100 |
-| 📊 **论文流程图** | 五阶段双分支神经网络方法 pipeline | SVG 矢量流程图 | **92** / 100 |
-| 📽️ **PPT 封面** | 《人工智能驱动的软件开发》课程汇报封面 | PNG · 16:9 | **80** / 100 |
-
-<details>
-<summary><b>查看完整 Prompt 输入</b></summary>
-
-- 电商：[`examples/ecommerce_case.json`](examples/ecommerce_case.json)
-- 学术：[`examples/academic_case.json`](examples/academic_case.json)
-- PPT：[`examples/ppt_case.json`](examples/ppt_case.json)
-
-本地重新生成展示图：
-
-```bash
-python scripts/generate_readme_examples.py
-```
-
-</details>
-
----
-
 ## 🛠️ 技术栈
 
 | 层级 | 技术 |
@@ -398,7 +396,7 @@ Spec2Vision/
 │   ├── specs/           # 6 份设计规格文档
 │   ├── demo/            # Demo Day 答辩脚本
 │   ├── images/          # 架构 Mermaid 源文件 + README 示例图
-│   │   └── examples/    # 三领域生成样例（PNG/SVG）
+│   │   └── examples/    # 三领域生成样例（PNG）
 ├── examples/            # 三领域示例 JSON
 ├── scripts/             # 工具脚本（含 README 示例图生成）
 ├── tests/               # pytest 测试套件
