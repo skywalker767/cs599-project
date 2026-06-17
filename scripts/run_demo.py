@@ -10,10 +10,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-# Ensure mock mode unless caller overrides
-os.environ.setdefault("IMAGE_PROVIDER", "mock")
-os.environ.setdefault("LLM_PROVIDER", "mock")
-os.environ.setdefault("DEMO_MODE", "true")
+# Force offline mock — overrides local .env
+os.environ["IMAGE_PROVIDER"] = "mock"
+os.environ["LLM_PROVIDER"] = "mock"
+os.environ["DEMO_MODE"] = "true"
+os.environ["OPENAI_API_KEY"] = ""
+os.environ["DEEPSEEK_API_KEY"] = ""
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

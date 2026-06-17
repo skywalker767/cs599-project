@@ -1,9 +1,9 @@
 {
-  "task_id": "31072f9b",
+  "task_id": "92f72e0c",
   "task_type": "academic_figure",
   "route_reason": "method=manual | confidence=1.0 | task_type=academic_figure | signals=manual_override:academic_figure",
   "asset_file": "asset.svg",
-  "output_path_original": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\31072f9b_flowchart.svg",
+  "output_path_original": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\92f72e0c_flowchart.svg",
   "overall_score": 67,
   "offline_score": 67,
   "provider_mode": "mock",

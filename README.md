@@ -25,9 +25,7 @@
 
 ## ✨ 效果展示
 
-> **默认 clone 后使用 Mock provider**（无 API Key、可复现）。下方 PNG 预览图为维护者用 OpenAI Images API **可选生成**的静态样例，存放于 `docs/images/examples/`。
->
-> 学术 SVG 由本地 `DiagramGenerator` 离线渲染。**离线启发式评估分 63–77，不代表人类审美判断。**
+> **默认 clone 后使用 Mock provider**（无 API Key、可复现）。下方预览图为维护者用 OpenAI Images API **可选生成**的静态样例（PNG），存放于 `docs/images/examples/`。
 >
 > 老师验收请优先看 [`examples/demo/`](examples/demo/)（Mock 完整工件）或运行 `python benchmark.py --demo examples/ecommerce_case.json`。
 
@@ -42,16 +40,16 @@
       <br><br>
       <b>🛒 电商主图</b><br>
       <code>ecommerce_banner</code> · 1:1 · PNG<br>
-      <sub>冰爽0卡·夏日冰美式 · score 74</sub>
+      <sub>冰爽0卡·夏日冰美式</sub>
     </td>
     <td align="center" width="33%">
-      <a href="docs/images/examples/academic_pipeline.svg">
-        <img src="docs/images/examples/academic_pipeline.svg" alt="五阶段方法流程图" width="300"/>
+      <a href="docs/images/examples/academic_pipeline.png">
+        <img src="docs/images/examples/academic_pipeline.png" alt="五阶段方法流程图" width="300"/>
       </a>
       <br><br>
       <b>📊 学术流程图</b><br>
-      <code>academic_figure</code> · 4:3 · SVG<br>
-      <sub>五阶段机器学习方法流水线 · score 67</sub>
+      <code>academic_figure</code> · 4:3 · PNG<br>
+      <sub>五阶段机器学习方法流水线</sub>
     </td>
     <td align="center" width="33%">
       <a href="docs/images/examples/ppt_cover.png">
@@ -60,7 +58,7 @@
       <br><br>
       <b>🎓 PPT 封面</b><br>
       <code>ppt_visual</code> · 16:9 · PNG<br>
-      <sub>智能驱动·未来架构 · score 74</sub>
+      <sub>智能驱动·未来架构</sub>
     </td>
   </tr>
 </table>
@@ -76,26 +74,26 @@
   <tr>
     <td align="center" width="50%">
       <a href="docs/images/examples/ecom_skincare.png"><img src="docs/images/examples/ecom_skincare.png" alt="护肤品详情页" width="360"/></a><br>
-      <sub>双11精华液限时特惠 · 16:9 · score 74</sub>
+      <sub>双11精华液限时特惠 · 16:9</sub>
     </td>
     <td align="center" width="50%">
       <a href="docs/images/examples/ecom_sneakers.png"><img src="docs/images/examples/ecom_sneakers.png" alt="运动鞋广告" width="360"/></a><br>
-      <sub>科技缓震·轻弹启程 · 16:9 · score 77</sub>
+      <sub>科技缓震·轻弹启程 · 16:9</sub>
     </td>
   </tr>
 </table>
 
-**学术 · SVG 矢量流程**
+**学术 · 流程图 / 图形摘要**
 
 <table>
   <tr>
     <td align="center" width="50%">
-      <a href="docs/images/examples/acad_graphical.svg"><img src="docs/images/examples/acad_graphical.svg" alt="Encoder-Decoder 图形摘要" width="360"/></a><br>
-      <sub>编码器-解码器架构数据流 · 16:9 · score 67</sub>
+      <a href="docs/images/examples/acad_graphical.png"><img src="docs/images/examples/acad_graphical.png" alt="Encoder-Decoder 图形摘要" width="360"/></a><br>
+      <sub>编码器-解码器架构数据流 · 16:9</sub>
     </td>
     <td align="center" width="50%">
-      <a href="docs/images/examples/acad_cv_pipeline.svg"><img src="docs/images/examples/acad_cv_pipeline.svg" alt="CV 实验 pipeline" width="360"/></a><br>
-      <sub>计算机视觉实验 pipeline · 4:3 · score 63</sub>
+      <a href="docs/images/examples/acad_cv_pipeline.png"><img src="docs/images/examples/acad_cv_pipeline.png" alt="CV 实验 pipeline" width="360"/></a><br>
+      <sub>计算机视觉实验 pipeline · 4:3</sub>
     </td>
   </tr>
 </table>
@@ -106,11 +104,11 @@
   <tr>
     <td align="center" width="50%">
       <a href="docs/images/examples/ppt_business.png"><img src="docs/images/examples/ppt_business.png" alt="商业增长章节页" width="360"/></a><br>
-      <sub>稳健增长：营收攀升轨迹 · 16:9 · score 72</sub>
+      <sub>稳健增长：营收攀升轨迹 · 16:9</sub>
     </td>
     <td align="center" width="50%">
       <a href="docs/images/examples/ppt_infographic.png"><img src="docs/images/examples/ppt_infographic.png" alt="气候变化科普信息图" width="360"/></a><br>
-      <sub>气候行动·从了解开始 · 16:9 · score 77</sub>
+      <sub>气候行动·从了解开始 · 16:9</sub>
     </td>
   </tr>
 </table>
@@ -120,17 +118,17 @@
 <details>
 <summary><b>📋 样例索引（9 例一览）</b></summary>
 
-| 文件 | 类型 | 比例 | 格式 | Provider | 分 |
-|------|------|------|------|----------|----|
-| `ecommerce_coffee` | 电商 | 1:1 | PNG | openai | 74 |
-| `ecom_skincare` | 电商 | 16:9 | PNG | openai | 74 |
-| `ecom_sneakers` | 电商 | 16:9 | PNG | openai | 77 |
-| `academic_pipeline` | 学术 | 4:3 | SVG | diagram | 67 |
-| `acad_graphical` | 学术 | 16:9 | SVG | diagram | 67 |
-| `acad_cv_pipeline` | 学术 | 4:3 | SVG | diagram | 63 |
-| `ppt_cover` | PPT | 16:9 | PNG | openai | 74 |
-| `ppt_business` | PPT | 16:9 | PNG | openai | 72 |
-| `ppt_infographic` | PPT | 16:9 | PNG | openai | 77 |
+| 文件 | 类型 | 比例 | 格式 | Provider |
+|------|------|------|------|----------|
+| `ecommerce_coffee` | 电商 | 1:1 | PNG | openai |
+| `ecom_skincare` | 电商 | 16:9 | PNG | openai |
+| `ecom_sneakers` | 电商 | 16:9 | PNG | openai |
+| `academic_pipeline` | 学术 | 4:3 | PNG | diagram (PNG) |
+| `acad_graphical` | 学术 | 16:9 | PNG | diagram (PNG) |
+| `acad_cv_pipeline` | 学术 | 4:3 | PNG | diagram (PNG) |
+| `ppt_cover` | PPT | 16:9 | PNG | openai |
+| `ppt_business` | PPT | 16:9 | PNG | openai |
+| `ppt_infographic` | PPT | 16:9 | PNG | openai |
 
 元数据：`docs/images/examples/manifest.json` · 用例 JSON：[`examples/`](examples/) · Benchmark：[`benchmarks/examples.jsonl`](benchmarks/examples.jsonl)
 

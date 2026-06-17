@@ -34,8 +34,16 @@ from app.services.generation_service import GenerationService
 EXAMPLES_DIR = _PROJECT_ROOT / "examples"
 OUT_DIR = _PROJECT_ROOT / "docs" / "images" / "examples"
 
+ACAD_PNG_ANSWERS: list[tuple[str, str]] = [
+    ("output_format", "png"),
+    ("figure_type", "method_pipeline"),
+    ("academic_style", "journal_clean"),
+    ("structure_complexity", "medium"),
+]
+
 # Featured: rich prompts from examples/*.json with clarification answers.
-# Extended: benchmark-style cases (skip clarification) for breadth without huge README.
+# Extended: benchmark-style cases for breadth without huge README.
+# Academic cases use PNG (GitHub README renders PNG reliably; SVG often fails).
 SHOWCASE_CASES: list[dict] = [
     {
         "slug": "ecommerce_coffee",
@@ -54,12 +62,7 @@ SHOWCASE_CASES: list[dict] = [
         "featured": True,
         "caption": "五阶段双分支网络方法流程图",
         "json": "academic_case.json",
-        "answers": [
-            ("output_format", "svg"),
-            ("figure_type", "method_pipeline"),
-            ("academic_style", "journal_clean"),
-            ("structure_complexity", "medium"),
-        ],
+        "answers": ACAD_PNG_ANSWERS,
     },
     {
         "slug": "ppt_cover",
@@ -93,19 +96,29 @@ SHOWCASE_CASES: list[dict] = [
         "slug": "acad_graphical",
         "featured": False,
         "caption": "NLP Encoder-Decoder 图形摘要",
-        "user_input": "为 NLP 论文生成 graphical abstract，展示 encoder-decoder 架构与数据流 pipeline diagram",
+        "user_input": "为 NLP 论文生成 graphical abstract，展示 encoder-decoder 架构与数据流 pipeline diagram，学术期刊风格流程图",
         "aspect_ratio": "16:9",
         "task_type": "academic_figure",
-        "skip_clarification": True,
+        "answers": [
+            ("output_format", "png"),
+            ("figure_type", "graphical_abstract"),
+            ("academic_style", "journal_clean"),
+            ("structure_complexity", "medium"),
+        ],
     },
     {
         "slug": "acad_cv_pipeline",
         "featured": False,
         "caption": "计算机视觉实验 pipeline",
-        "user_input": "计算机视觉实验 pipeline 示意图，数据增强到分类输出，学术 framework diagram",
+        "user_input": "计算机视觉实验 pipeline 示意图，数据增强到分类输出，学术 framework diagram，模块箭头清晰",
         "aspect_ratio": "4:3",
         "task_type": "academic_figure",
-        "skip_clarification": True,
+        "answers": [
+            ("output_format", "png"),
+            ("figure_type", "experiment_workflow"),
+            ("academic_style", "journal_clean"),
+            ("structure_complexity", "medium"),
+        ],
     },
     {
         "slug": "ppt_business",
@@ -165,14 +178,19 @@ def _build_request(case: dict) -> GenerationRequest:
             aspect_ratio=raw.get("aspect_ratio"),
             enable_revision=False,
             clarification_answers=answers,
-            skip_clarification=False,
+            skip_clarification=case.get("skip_clarification", False),
         )
+    answers = [
+        ClarificationAnswer(question_id=qid, selected_value=val)
+        for qid, val in case.get("answers", [])
+    ]
     return GenerationRequest(
         user_input=case["user_input"],
         task_type=case.get("task_type", "auto"),
         aspect_ratio=case.get("aspect_ratio"),
         enable_revision=False,
-        skip_clarification=case.get("skip_clarification", True),
+        clarification_answers=answers,
+        skip_clarification=case.get("skip_clarification", not answers),
     )
 
 
@@ -213,6 +231,18 @@ def _cleanup_stale_assets(keep_slugs: set[str]) -> None:
 
 
 def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate README showcase images")
+    parser.add_argument(
+        "--only",
+        help="Comma-separated slugs to regenerate (e.g. academic_pipeline,acad_graphical)",
+    )
+    args = parser.parse_args()
+    only_slugs: set[str] | None = None
+    if args.only:
+        only_slugs = {s.strip() for s in args.only.split(",") if s.strip()}
+
     _reset_singletons()
     settings = get_settings()
     provider = (settings.image_provider or "mock").lower()
@@ -224,12 +254,27 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     service = GenerationService()
     session = _db_session()
-    items: list[dict] = []
+
+    cases = SHOWCASE_CASES
+    if only_slugs:
+        cases = [c for c in SHOWCASE_CASES if c["slug"] in only_slugs]
+        if not cases:
+            print(f"No matching slugs in: {args.only}")
+            return
+
+    # Merge with existing manifest when regenerating a subset
+    manifest_path = OUT_DIR / "manifest.json"
+    existing_items: list[dict] = []
+    if only_slugs and manifest_path.exists():
+        existing_items = json.loads(manifest_path.read_text(encoding="utf-8")).get("items", [])
+        existing_items = [i for i in existing_items if i["slug"] not in only_slugs]
+
+    items: list[dict] = list(existing_items)
     keep_slugs = {c["slug"] for c in SHOWCASE_CASES}
 
-    for case in SHOWCASE_CASES:
+    for case in cases:
         slug = case["slug"]
-        print(f"\n=== [{len(items)+1}/{len(SHOWCASE_CASES)}] {slug} ===")
+        print(f"\n=== [{len(items)+1}/{len(existing_items)+len(cases)}] {slug} ===")
         try:
             result = service.run_generation(session, _build_request(case))
         except Exception as exc:
@@ -244,6 +289,9 @@ def main() -> None:
         ext = _ext_for(src)
         dest = OUT_DIR / f"{slug}{ext}"
         shutil.copy2(src, dest)
+        for stale in OUT_DIR.glob(f"{slug}.*"):
+            if stale != dest and stale.is_file():
+                stale.unlink()
 
         if ext == ".png" and is_mock_image:
             _enhance_mock_png(
@@ -269,6 +317,11 @@ def main() -> None:
         print(f"Saved: {dest.name} score={meta['score']} format={meta['format']}")
 
     _cleanup_stale_assets(keep_slugs)
+    items.sort(
+        key=lambda i: next(
+            idx for idx, c in enumerate(SHOWCASE_CASES) if c["slug"] == i["slug"]
+        )
+    )
 
     manifest = {
         "generated_at": datetime.now(timezone.utc).isoformat(),

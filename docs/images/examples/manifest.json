@@ -18,15 +18,15 @@
     },
     {
       "slug": "academic_pipeline",
-      "file": "examples/academic_pipeline.svg",
+      "file": "examples/academic_pipeline.png",
       "featured": true,
       "caption": "五阶段双分支网络方法流程图",
       "task_type": "academic_figure",
       "aspect_ratio": "4:3",
-      "format": "svg",
+      "format": "png",
       "title": "五阶段机器学习方法流水线图",
       "score": 67,
-      "provider": "diagram_generator"
+      "provider": "diagram_generator_png"
     },
     {
       "slug": "ppt_cover",
@@ -66,27 +66,27 @@
     },
     {
       "slug": "acad_graphical",
-      "file": "examples/acad_graphical.svg",
+      "file": "examples/acad_graphical.png",
       "featured": false,
       "caption": "NLP Encoder-Decoder 图形摘要",
       "task_type": "academic_figure",
       "aspect_ratio": "16:9",
-      "format": "svg",
+      "format": "png",
       "title": "编码器-解码器架构数据流管道图",
       "score": 67,
-      "provider": "diagram_generator"
+      "provider": "diagram_generator_png"
     },
     {
       "slug": "acad_cv_pipeline",
-      "file": "examples/acad_cv_pipeline.svg",
+      "file": "examples/acad_cv_pipeline.png",
       "featured": false,
       "caption": "计算机视觉实验 pipeline",
       "task_type": "academic_figure",
       "aspect_ratio": "4:3",
-      "format": "svg",
+      "format": "png",
       "title": "计算机视觉实验pipeline示意图",
       "score": 63,
-      "provider": "diagram_generator"
+      "provider": "diagram_generator_png"
     },
     {
       "slug": "ppt_business",

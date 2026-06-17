@@ -47,7 +47,7 @@
       "score": 25,
       "rationale": "SVG XML 解析失败：duplicate attribute: line 4, column 82",
       "evidence": [
-        "file=31072f9b_flowchart.svg",
+        "file=92f72e0c_flowchart.svg",
         "suffix=svg",
         "扩展名与 output_format=svg 一致",
         "size=1322B",
@@ -122,7 +122,7 @@
     }
   },
   "evidence": [
-    "file=31072f9b_flowchart.svg",
+    "file=92f72e0c_flowchart.svg",
     "suffix=svg",
     "扩展名与 output_format=svg 一致",
     "size=1322B",

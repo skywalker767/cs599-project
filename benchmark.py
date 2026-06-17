@@ -17,10 +17,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-# Default offline reproducibility for teachers / CI-like local runs
-os.environ.setdefault("IMAGE_PROVIDER", "mock")
-os.environ.setdefault("LLM_PROVIDER", "mock")
-os.environ.setdefault("DEMO_MODE", "true")
+# Force offline mock — overrides local .env
+os.environ["IMAGE_PROVIDER"] = "mock"
+os.environ["LLM_PROVIDER"] = "mock"
+os.environ["DEMO_MODE"] = "true"
+os.environ["OPENAI_API_KEY"] = ""
+os.environ["DEEPSEEK_API_KEY"] = ""
 
 
 def _run_demo(case_path: Path) -> int:

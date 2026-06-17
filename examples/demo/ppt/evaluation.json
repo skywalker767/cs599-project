@@ -47,7 +47,7 @@
       "score": 30,
       "rationale": "PNG 疑似纯色/空白图（亮度跨度 0）。",
       "evidence": [
-        "file=842c4704_ppt_visual.png",
+        "file=1bd7f61e_ppt_visual.png",
         "suffix=png",
         "扩展名与 output_format=png 一致",
         "size=7771B",
@@ -118,7 +118,7 @@
     }
   },
   "evidence": [
-    "file=842c4704_ppt_visual.png",
+    "file=1bd7f61e_ppt_visual.png",
     "suffix=png",
     "扩展名与 output_format=png 一致",
     "size=7771B",

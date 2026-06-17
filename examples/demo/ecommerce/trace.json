@@ -42,7 +42,7 @@
       "pipeline_step": "router_decision"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.613425+00:00",
+    "timestamp": "2026-06-17T14:39:29.549602+00:00",
     "duration_ms": 1
   },
   {
@@ -438,7 +438,7 @@
       "pipeline_step": "clarification_needed"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.614718+00:00",
+    "timestamp": "2026-06-17T14:39:29.550682+00:00",
     "duration_ms": 0
   },
   {
@@ -469,7 +469,7 @@
       "llm_parse_ok": true
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.615810+00:00",
+    "timestamp": "2026-06-17T14:39:29.551560+00:00",
     "duration_ms": 0
   },
   {
@@ -579,7 +579,7 @@
       "pipeline_step": "visual_spec_created"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.616999+00:00",
+    "timestamp": "2026-06-17T14:39:29.552731+00:00",
     "duration_ms": 0
   },
   {
@@ -617,7 +617,7 @@
       ]
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.617785+00:00",
+    "timestamp": "2026-06-17T14:39:29.553532+00:00",
     "duration_ms": 0
   },
   {
@@ -635,7 +635,7 @@
       "pipeline_step": "prompt_created"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.618635+00:00",
+    "timestamp": "2026-06-17T14:39:29.554428+00:00",
     "duration_ms": 0
   },
   {
@@ -650,16 +650,16 @@
       "pipeline_step": "provider_selected"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.619415+00:00",
+    "timestamp": "2026-06-17T14:39:29.555257+00:00",
     "duration_ms": 0
   },
   {
     "step": "generate_asset",
     "agent_name": "AssetManagerAgent",
     "input_summary": "ecommerce_banner",
-    "output_summary": "6473f801_ecommerce_banner.png",
+    "output_summary": "12970c22_ecommerce_banner.png",
     "metadata": {
-      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\generated\\6473f801_ecommerce_banner.png",
+      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\generated\\12970c22_ecommerce_banner.png",
       "provider": "mock",
       "image_provider": "mock",
       "generation_mode": "mock",
@@ -679,13 +679,13 @@
     "warnings": [
       "ideal 1536x864 snapped to API size 1792x1024 (provider supports dict_keys(['1024x1024', '1792x1024', '1024x1792', '1536x1024', '1024x1536']))"
     ],
-    "timestamp": "2026-06-17T14:36:23.655388+00:00",
-    "duration_ms": 36
+    "timestamp": "2026-06-17T14:39:29.604097+00:00",
+    "duration_ms": 48
   },
   {
     "step": "evaluate_asset",
     "agent_name": "CriticAgent",
-    "input_summary": "E:\\VisionFlow\\cs599-project\\storage\\generated\\6473f801_ecommerce_banner.png",
+    "input_summary": "E:\\VisionFlow\\cs599-project\\storage\\generated\\12970c22_ecommerce_banner.png",
     "output_summary": "overall=41, offline=41",
     "metadata": {
       "requirement_match_score": 95,
@@ -736,7 +736,7 @@
           "score": 30,
           "rationale": "PNG 疑似纯色/空白图（亮度跨度 0）。",
           "evidence": [
-            "file=6473f801_ecommerce_banner.png",
+            "file=12970c22_ecommerce_banner.png",
             "suffix=png",
             "扩展名与 output_format=png 一致",
             "size=7770B",
@@ -809,7 +809,7 @@
         }
       },
       "evidence": [
-        "file=6473f801_ecommerce_banner.png",
+        "file=12970c22_ecommerce_banner.png",
         "suffix=png",
         "扩展名与 output_format=png 一致",
         "size=7770B",
@@ -874,23 +874,23 @@
     "warnings": [
       "检测到 5 个风险宣传词。"
     ],
-    "timestamp": "2026-06-17T14:36:23.770561+00:00",
-    "duration_ms": 113
+    "timestamp": "2026-06-17T14:39:29.728254+00:00",
+    "duration_ms": 122
   },
   {
     "step": "save_assets",
     "agent_name": "AssetManagerAgent",
-    "input_summary": "6473f801",
-    "output_summary": "prompt=6473f801_prompt.txt, report=6473f801_evaluation.json",
+    "input_summary": "12970c22",
+    "output_summary": "prompt=12970c22_prompt.txt, report=12970c22_evaluation.json",
     "metadata": {
-      "prompt_path": "E:\\VisionFlow\\cs599-project\\storage\\prompts\\6473f801_prompt.txt",
-      "report_path": "E:\\VisionFlow\\cs599-project\\storage\\reports\\6473f801_evaluation.json",
-      "trace_path": "E:\\VisionFlow\\cs599-project\\storage\\traces\\6473f801.json",
-      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\generated\\6473f801_ecommerce_banner.png",
+      "prompt_path": "E:\\VisionFlow\\cs599-project\\storage\\prompts\\12970c22_prompt.txt",
+      "report_path": "E:\\VisionFlow\\cs599-project\\storage\\reports\\12970c22_evaluation.json",
+      "trace_path": "E:\\VisionFlow\\cs599-project\\storage\\traces\\12970c22.json",
+      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\generated\\12970c22_ecommerce_banner.png",
       "evaluation_overall": 41
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.774253+00:00",
-    "duration_ms": 2
+    "timestamp": "2026-06-17T14:39:29.731045+00:00",
+    "duration_ms": 1
   }
 ]

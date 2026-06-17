@@ -61,6 +61,89 @@ class DiagramGenerator:
         out_path.write_text("\n".join(lines), encoding="utf-8")
         return out_path
 
+    def generate_png(
+        self,
+        task_id: str,
+        visual_spec: VisualSpec,
+        *,
+        dest_dir: Path | None = None,
+        scale: float = 2.5,
+    ) -> Path:
+        """Render the same flowchart layout as PNG (GitHub README friendly)."""
+        from PIL import Image, ImageDraw, ImageFont
+
+        settings = get_settings()
+        out_dir = dest_dir or settings.diagrams_dir
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        elements = visual_spec.key_elements or ["Input", "Process", "Output"]
+        title = visual_spec.title or "Academic Figure"
+        box_w, box_h, gap = int(220 * scale), int(50 * scale), int(36 * scale)
+        n = len(elements)
+        svg_w = int(480 * scale)
+        svg_h = int(90 * scale) + n * (box_h + gap) + int(30 * scale)
+        cx = svg_w // 2
+
+        img = Image.new("RGB", (svg_w, svg_h), "#ffffff")
+        draw = ImageDraw.Draw(img)
+        try:
+            font_title = ImageFont.truetype("arial.ttf", int(18 * scale))
+            font_label = ImageFont.truetype("arial.ttf", int(14 * scale))
+        except OSError:
+            font_title = ImageFont.load_default()
+            font_label = font_title
+
+        title_bbox = draw.textbbox((0, 0), title, font=font_title)
+        draw.text(
+            (cx - (title_bbox[2] - title_bbox[0]) // 2, int(16 * scale)),
+            title[:60],
+            fill="#111827",
+            font=font_title,
+        )
+
+        y = int(60 * scale)
+        for i, elem in enumerate(elements):
+            label = elem[:35]
+            x = cx - box_w // 2
+            draw.rounded_rectangle(
+                [x, y, x + box_w, y + box_h],
+                radius=int(6 * scale),
+                fill="#eef2ff",
+                outline="#111827",
+                width=max(2, int(2 * scale)),
+            )
+            label_bbox = draw.textbbox((0, 0), label, font=font_label)
+            draw.text(
+                (
+                    cx - (label_bbox[2] - label_bbox[0]) // 2,
+                    y + box_h // 2 - (label_bbox[3] - label_bbox[1]) // 2,
+                ),
+                label,
+                fill="#111827",
+                font=font_label,
+            )
+            if i < n - 1:
+                ay = y + box_h
+                draw.line(
+                    (cx, ay, cx, ay + gap),
+                    fill="#111827",
+                    width=max(2, int(2 * scale)),
+                )
+                tip = ay + gap
+                draw.polygon(
+                    [
+                        (cx, tip),
+                        (cx - int(5 * scale), tip - int(8 * scale)),
+                        (cx + int(5 * scale), tip - int(8 * scale)),
+                    ],
+                    fill="#111827",
+                )
+            y += box_h + gap
+
+        out_path = out_dir / f"{task_id}_flowchart.png"
+        img.save(out_path, format="PNG")
+        return out_path
+
     def generate_mermaid_spec(self, visual_spec: VisualSpec) -> str:
         """Return a Mermaid flowchart spec string for academic figures."""
         elements = visual_spec.key_elements or ["Input", "Process", "Output"]

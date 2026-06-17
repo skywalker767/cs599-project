@@ -30,7 +30,7 @@
       "pipeline_step": "router_decision"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.785243+00:00",
+    "timestamp": "2026-06-17T14:39:29.741865+00:00",
     "duration_ms": 0
   },
   {
@@ -353,7 +353,7 @@
       "pipeline_step": "clarification_needed"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.786100+00:00",
+    "timestamp": "2026-06-17T14:39:29.742843+00:00",
     "duration_ms": 0
   },
   {
@@ -387,7 +387,7 @@
       "llm_parse_ok": true
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.787104+00:00",
+    "timestamp": "2026-06-17T14:39:29.743718+00:00",
     "duration_ms": 0
   },
   {
@@ -494,7 +494,7 @@
       "pipeline_step": "visual_spec_created"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.788054+00:00",
+    "timestamp": "2026-06-17T14:39:29.744653+00:00",
     "duration_ms": 0
   },
   {
@@ -522,7 +522,7 @@
       ]
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.788877+00:00",
+    "timestamp": "2026-06-17T14:39:29.745475+00:00",
     "duration_ms": 0
   },
   {
@@ -540,7 +540,7 @@
       "pipeline_step": "prompt_created"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.790057+00:00",
+    "timestamp": "2026-06-17T14:39:29.746380+00:00",
     "duration_ms": 0
   },
   {
@@ -555,16 +555,16 @@
       "pipeline_step": "provider_selected"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.790914+00:00",
+    "timestamp": "2026-06-17T14:39:29.747180+00:00",
     "duration_ms": 0
   },
   {
     "step": "generate_asset",
     "agent_name": "AssetManagerAgent",
     "input_summary": "academic_figure",
-    "output_summary": "31072f9b_flowchart.svg",
+    "output_summary": "92f72e0c_flowchart.svg",
     "metadata": {
-      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\31072f9b_flowchart.svg",
+      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\92f72e0c_flowchart.svg",
       "provider": "diagram_generator",
       "image_provider": "diagram_generator",
       "generation_mode": "svg",
@@ -584,13 +584,13 @@
     "warnings": [
       "ideal 1280x960 snapped to API size 1536x1024 (provider supports dict_keys(['1024x1024', '1792x1024', '1024x1792', '1536x1024', '1024x1536']))"
     ],
-    "timestamp": "2026-06-17T14:36:23.791344+00:00",
+    "timestamp": "2026-06-17T14:39:29.747582+00:00",
     "duration_ms": 0
   },
   {
     "step": "evaluate_asset",
     "agent_name": "CriticAgent",
-    "input_summary": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\31072f9b_flowchart.svg",
+    "input_summary": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\92f72e0c_flowchart.svg",
     "output_summary": "overall=67, offline=67",
     "metadata": {
       "requirement_match_score": 95,
@@ -641,7 +641,7 @@
           "score": 25,
           "rationale": "SVG XML 解析失败：duplicate attribute: line 4, column 82",
           "evidence": [
-            "file=31072f9b_flowchart.svg",
+            "file=92f72e0c_flowchart.svg",
             "suffix=svg",
             "扩展名与 output_format=svg 一致",
             "size=1322B",
@@ -716,7 +716,7 @@
         }
       },
       "evidence": [
-        "file=31072f9b_flowchart.svg",
+        "file=92f72e0c_flowchart.svg",
         "suffix=svg",
         "扩展名与 output_format=svg 一致",
         "size=1322B",
@@ -778,23 +778,23 @@
       "pipeline_step": "evaluation_completed"
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.793498+00:00",
+    "timestamp": "2026-06-17T14:39:29.749712+00:00",
     "duration_ms": 1
   },
   {
     "step": "save_assets",
     "agent_name": "AssetManagerAgent",
-    "input_summary": "31072f9b",
-    "output_summary": "prompt=31072f9b_prompt.txt, report=31072f9b_evaluation.json",
+    "input_summary": "92f72e0c",
+    "output_summary": "prompt=92f72e0c_prompt.txt, report=92f72e0c_evaluation.json",
     "metadata": {
-      "prompt_path": "E:\\VisionFlow\\cs599-project\\storage\\prompts\\31072f9b_prompt.txt",
-      "report_path": "E:\\VisionFlow\\cs599-project\\storage\\reports\\31072f9b_evaluation.json",
-      "trace_path": "E:\\VisionFlow\\cs599-project\\storage\\traces\\31072f9b.json",
-      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\31072f9b_flowchart.svg",
+      "prompt_path": "E:\\VisionFlow\\cs599-project\\storage\\prompts\\92f72e0c_prompt.txt",
+      "report_path": "E:\\VisionFlow\\cs599-project\\storage\\reports\\92f72e0c_evaluation.json",
+      "trace_path": "E:\\VisionFlow\\cs599-project\\storage\\traces\\92f72e0c.json",
+      "output_path": "E:\\VisionFlow\\cs599-project\\storage\\diagrams\\92f72e0c_flowchart.svg",
       "evaluation_overall": 67
     },
     "warnings": [],
-    "timestamp": "2026-06-17T14:36:23.795824+00:00",
+    "timestamp": "2026-06-17T14:39:29.752089+00:00",
     "duration_ms": 1
   }
 ]
